@@ -106,16 +106,17 @@ var PuffEvent = (function(){
                         moment(this.event.start.dateTime).toDate();
                 },
                 set: function(value){
+                    var candidate;
                     if (this.wholeday){
-                        var candidate = moment(value).format('YYYY-MM-DD')
+                        candidate = moment(value).format('YYYY-MM-DD');
                         if(this.event.start.date!==candidate){
                             this.event.start.date=candidate;
                             this.setDirty();
                         }
                     } 
                     else {
-                        var candidate = moment(value).format('YYYY-MM-DDTHH:mm:ssZ');
-                        if(this.event.start.dateTime!=candidate){
+                        candidate = moment(value).format('YYYY-MM-DDTHH:mm:ssZ');
+                        if(this.event.start.dateTime!==candidate){
                             this.event.start.dateTime=candidate;
                             this.setDirty();
                         }
@@ -130,15 +131,16 @@ var PuffEvent = (function(){
                         moment(this.event.end.dateTime).toDate();
                 },
                 set: function(value){
+                    var candidate;
                     if (this.wholeday){
-                        var candidate = moment(value).add(1,'days').format('YYYY-MM-DD')
+                        candidate = moment(value).add(1,'days').format('YYYY-MM-DD');
                         if(this.event.end.date!==candidate){
                             this.event.end.date=candidate;
                             this.setDirty();
                         }
                     } 
                     else {
-                        var candidate = moment(value).format('YYYY-MM-DDTHH:mm:ssZ');
+                        candidate = moment(value).format('YYYY-MM-DDTHH:mm:ssZ');
                         if(this.event.end.dateTime!==candidate){
                             this.event.end.dateTime=candidate;
                             this.setDirty();
@@ -189,16 +191,16 @@ var PuffEvent = (function(){
             this.changeCount++;
         };
         this.setSaveState=function(state){
-            saveState=state;
-            changeSavingStateCount++
-        }
+            this.saveState=state;
+            this.changeSavingStateCount++;
+        };
         this.save=function(){
             this.setSaveState('saving');
-        }
+        };
         this.saved=function(){
             this.setSaveState('loaded');
             this.dirty=false;
-        }
+        };
     }
 
         //STATICKE

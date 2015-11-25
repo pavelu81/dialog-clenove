@@ -99,12 +99,13 @@
 				this.eventObserver = new ObjectObserver(this.event);
 				this.eventObserver.open(this.eventChanged,this);
 			},
-			eventChanged: function(added, removed, changed, getOldValueFn){
+			eventChanged: function(added, removed, changed/*, getOldValueFn - zatim nepotrebujeme*/){
 				console.log(changed);
-				for (var k in this.event){
+				var k;
+				for (k in this.event){
 					this.notifyPath('event.'+k,this.event[k]);
 				}
-				for (var k in changed){
+				for (k in changed){
 					this.notifyPath('event.'+k,this.event[k]);
 				}
 			},

@@ -1,0 +1,197 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="generator" content="Polymer Starter Kit" />
+  <title>Členové DIALOG</title>
+  <!-- Place favicon.ico in the `app/` directory -->
+
+  <!-- Chrome for Android theme color -->
+  <meta name="theme-color" content="#2E3AA1">
+
+  <!-- Web Application Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Tile color for Win8 -->
+  <meta name="msapplication-TileColor" content="#3372DF">
+
+  <!-- Add to homescreen for Chrome on Android -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="PSK">
+  <link rel="icon" sizes="192x192" href="images/touch/chrome-touch-icon-192x192.png">
+
+  <!-- Add to homescreen for Safari on iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Polymer Starter Kit">
+  <link rel="apple-touch-icon" href="images/touch/apple-touch-icon.png">
+
+  <!-- Tile icon for Win8 (144x144) -->
+  <meta name="msapplication-TileImage" content="images/touch/ms-touch-icon-144x144-precomposed.png">
+
+  <!-- build:css styles/main.css -->
+  <link rel="stylesheet" href="styles/main.css">
+  <!-- endbuild-->
+
+  <!-- build:js bower_components/webcomponentsjs/webcomponents-lite.min.js -->
+  <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <!-- endbuild -->
+
+  <!-- will be replaced with elements/elements.vulcanized.html -->
+  <link rel="import" href="elements/elements.html">
+  <!-- endreplace-->
+
+  <!-- For shared styles, shared-styles.html import in elements.html -->
+  <style is="custom-style" include="shared-styles"></style>
+
+</head>
+
+<body unresolved class="fullbleed layout vertical">
+  <span id="browser-sync-binding"></span>
+  <template is="dom-bind" id="app">
+
+    <paper-drawer-panel id="paperDrawerPanel">
+      <!-- Drawer Scroll Header Panel -->
+      <paper-scroll-header-panel drawer fixed>
+
+        <!-- Drawer Toolbar -->
+        <paper-toolbar id="drawerToolbar">
+          <span class="paper-font-title">Členové</span>
+        </paper-toolbar>
+
+        <!-- Drawer Content -->
+        <paper-menu class="list" attr-for-selected="data-route" selected="[[route]]">
+          <a data-route="home" href="/" on-click="onDataRouteClick">
+            <span hidden=[[signed]]>
+				<iron-icon icon="account-box"></iron-icon>
+				<span>Přihlášení</span>
+            </span>
+            <span hidden="[[!signed]]">
+				<iron-icon icon="apps"></iron-icon><span>Rozcestník</span>
+            </span>
+          </a>
+		  
+          <a data-route="ferman" href="/ferman" on-click="onDataRouteClick" hidden="[[!signed]]">
+            <iron-icon icon="event"></iron-icon><span>Ferman</span>
+          </a>
+
+          <a data-route="home" href="/logout" on-click="onDataRouteClick"  hidden="[[!signed]]">
+				<iron-icon icon="exit-to-app"></iron-icon>
+				<span>Odhlásit</span>
+          </a>
+
+		  
+<!--
+          <a data-route="users" href="/users" on-click="onDataRouteClick" hidden="[[!signed]]">
+            <iron-icon icon="info"></iron-icon>
+            <span>Users</span>
+          </a>
+
+          <a data-route="contact" href="/contact" on-click="onDataRouteClick" hidden="[[!signed]]">
+            <iron-icon icon="mail"></iron-icon>
+            <span>Contact</span>
+          </a>
+
+-->
+
+        </paper-menu>
+      </paper-scroll-header-panel>
+
+      <!-- Main Area -->
+      <paper-scroll-header-panel main condenses keep-condensed-header>
+
+        <!-- Main Toolbar -->
+		<paper-toolbar id="mainToolbar" class="tall">
+          <paper-icon-button id="paperToggle" icon="menu" paper-drawer-toggle></paper-icon-button>
+          <span class="flex"></span>
+
+          <!-- Toolbar icons -->
+          <!--
+		  <paper-icon-button icon="refresh"></paper-icon-button>
+          <paper-icon-button icon="search"></paper-icon-button>
+		  -->
+
+          <!-- Application name -->
+          <div class="middle middle-container center horizontal layout">
+            <div hidden="[[signed]]" class="app-name">Přihlášení</div>
+            <div hidden="[[!signed]]" class="app-name">[[pageTitle]]</div>
+          </div>
+
+          <!-- Application sub title -->
+          <div class="bottom bottom-container center horizontal layout">
+            <div class="bottom-title paper-font-subhead">Divadelní spolek DIALOG - členský protál</div>
+          </div>
+        </paper-toolbar>
+
+        <!-- Main Content -->
+        <div class="content">
+          <iron-pages attr-for-selected="data-route" selected="{{route}}">
+            <section data-route="home">
+				<div hidden="[[signed]]">
+					<h1>Dobrý den,</h1>
+					<p>vítejte na členském portálu Divadelního spolku DIALOG. Tento je přístupný pouze členům, prosím přihlaste se svým účtem.</p>
+					<p>Nejste-li členem Dialogu, směle navštivte naše veřejné internetové stránky <a href="http://web.dsdialog.org/">DS DIALOG</a>.</p>
+				</div>
+				<div hidden="[[!signed]]">
+					<h1>Jste přihlášeni do členského portálu</h1>
+					<p>Tohle je nová verze</p>
+				</div>
+				<div>
+					<google-signin 
+						id="gsignin"
+						client-id="901475235015-9gp0m5tr7qj41gmtf9f9ebarj6cvkc42.apps.googleusercontent.com"
+						label-signin="Přihlásit se"
+						label-signout="Odhlásit"
+						hosted-domain="dsdialog.org"
+					>
+					</google-signin>
+				</div>
+            </section>
+			<section data-route="ferman">
+				<puff-agenda 
+					id='ferman'
+					requested-calendars='[
+						{"calendarType": "Ferman",		"id": "dsdialog@gmail.com","summary": "Vlaky"},
+						{"calendarType": "Ferman",		"id": "2r5vpinpb0h18iojn1hdst2db8@group.calendar.google.com","summary": "Bílý králík"},
+						{"calendarType": "Ferman",		"id": "ccro35on02gol2plnokr45ocns@group.calendar.google.com","summary": "Herkules a Augiášův chlév"},
+						{"calendarType": "Ferman",		"id": "kp17fro0t0su28kodt2l565u90@group.calendar.google.com","summary": "Kluk z plakátu"},
+						{"calendarType": "Ferman",		"id": "rasfhq8guscc0foijv68bmpnq4@group.calendar.google.com","summary": "Dva na kanapi"},
+						{"calendarType": "Ferman",		"id": "ghmbk1e6gfe5cpudpgop8nu6t8@group.calendar.google.com","summary": "DS Dialog"},
+						{"calendarType": "Ferman",		"id": "dsdialog.org_lt66tnmobj380edrpq9t671ols@group.calendar.google.com","summary": "Předběžné termíny"},
+						{"calendarType": "Ferman",		"id": "6m6lv5kuctdjg1qtri8re3tj8o@group.calendar.google.com","summary": "Limonádový Joe"},
+						{"calendarType": "Ferman",		"id": "aca8jhr6vj39oo6i8t4q7u5j34@group.calendar.google.com","summary": "O kočičím zpívání"},
+						{"calendarType": "Omluvenky",	"id": "dsdialog.org_hgp12kdgv6dpdo5a011ip0p7v4@group.calendar.google.com","summary": "Omluvenky DIALOG"},
+						{"calendarType": "Holidays",	"id": "cs.czech#holiday@group.v.calendar.google.com","summary": "Svátky"}
+					]'
+					>
+				</puff-agenda>
+			</section>
+
+          </iron-pages>
+        </div>
+      </paper-scroll-header-panel>
+    </paper-drawer-panel>
+
+  </template>
+
+  <!-- build:js scripts/app.js -->
+  <script src="scripts/app.js"></script>
+  <script src="scripts/signin.js"></script>
+  <!-- endbuild-->
+
+</body>
+
+</html>

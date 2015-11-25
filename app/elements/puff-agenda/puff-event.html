@@ -1,0 +1,225 @@
+<script src='../../bower_components/moment/min/moment-with-locales.min.js'></script>
+<link rel="import" href="puff-color-dir.html">
+<script>
+/* globals moment, PuffColorDir */
+/* exported PuffEvent */
+'use strict';
+
+var PuffEvent = (function(){
+    function PuffEvent(googleCalEvent, calendarType){
+        PuffEvent.instances[googleCalEvent.id]=this;
+
+        Object.defineProperties(this,{
+            event: {
+                value: googleCalEvent,
+                enumerable: false,
+                writable: true,
+            },
+            id: {
+                enumerable: true,
+                get: function(){return this.event.id;}
+            },
+            calendarType: {
+                set: function(value){
+                    calendarType=value;
+                    this.setDirty();
+                },
+                get: function(){
+                    return calendarType;
+                },
+                enumerable: true,
+            },
+            dialogEventType: {
+              get: function(){
+                  if (this.extendedProperties.user){
+                      return 'Omluvenka';
+                  }
+              },
+              enumerable: true,
+            },
+            dialogOmluvenkaUser: {
+                get: function(){
+                    if (this.dialogEventType==='Omluvenka')
+                    {
+                        return this.extendedProperties.user;
+                    }
+                    return ''; //není omluvenka
+                },
+                enumerable: true,
+            },
+            extendedProperties: {
+                get: function(){
+                    if (this.event && this.event.extendedProperties && this.event.extendedProperties.shared){
+                        return this.event.extendedProperties.shared;
+                    }
+                    return {};
+                }
+            },
+            summary: {
+                enumerable:true,
+                get: function(){
+                        return this.event.summary;
+                    },
+                set: function(value){
+                        this.event.summary=value;
+                        this.setDirty();
+                    }
+                },
+            description: {
+                    enumerable: true,
+                    get: function(){
+                        return this.event.description;
+                    },
+                    set: function(value){
+                        this.event.description=value;
+                        this.setDirty();
+                    }
+                },
+            resource: {
+              get: function(){
+                  return this.dialogEventType==='Omluvenka'?
+                    this.dialogOmluvenkaUser:
+                    this.event.organizer.displayName;
+              }  
+            },
+            colorSet: {
+                enumerable: true,
+                get: function(){
+                    return PuffEvent.colorDir.getColorSetForResource(this.resource,'200',true);
+                }
+            },
+            colorSetToolbar: {
+                enumerable: true,
+                get: function(){
+                    return PuffEvent.colorDir.getColorSetForResource(this.resource,'500',true);
+                }
+            },
+            wholeday: {
+                enumerable: true,
+                get: function(){return this.event.start.date?true:false;}
+            },
+            timeFrom: {
+                enumerable: true,
+                get: function(){
+                    return this.wholeday?
+                        moment(this.event.start.date).toDate():
+                        moment(this.event.start.dateTime).toDate();
+                },
+                set: function(value){
+                    if (this.wholeday){
+                        var candidate = moment(value).format('YYYY-MM-DD')
+                        if(this.event.start.date!==candidate){
+                            this.event.start.date=candidate;
+                            this.setDirty();
+                        }
+                    } 
+                    else {
+                        var candidate = moment(value).format('YYYY-MM-DDTHH:mm:ssZ');
+                        if(this.event.start.dateTime!=candidate){
+                            this.event.start.dateTime=candidate;
+                            this.setDirty();
+                        }
+                    }
+                }
+            },
+            timeTo: {
+                enumerable: true,
+                get: function(){
+                    return this.wholeday?
+                        moment(this.event.end.date).add(-1,'ms').toDate():
+                        moment(this.event.end.dateTime).toDate();
+                },
+                set: function(value){
+                    if (this.wholeday){
+                        var candidate = moment(value).add(1,'days').format('YYYY-MM-DD')
+                        if(this.event.end.date!==candidate){
+                            this.event.end.date=candidate;
+                            this.setDirty();
+                        }
+                    } 
+                    else {
+                        var candidate = moment(value).format('YYYY-MM-DDTHH:mm:ssZ');
+                        if(this.event.end.dateTime!==candidate){
+                            this.event.end.dateTime=candidate;
+                            this.setDirty();
+                        }
+                    }
+                }
+
+            },
+
+            debug: {
+                //enumerable: true,
+                get: function(){return JSON.stringify(this,null,2);}
+            },
+
+            //OBSERVABLES
+            //vlastnosti, ktere jsou enumerable false a nemaji getter a setter, takze lze na ne pověsit observer
+            //obvykle pouziji observer tak, ze propaguje enumerable vlastnosti plus tu nonenumerable, ktera zmenu vyhodila
+            //treba filtry polymeru pak muzu povesit jenom na zmenu changesavingstatecount
+            //toto je vlastnost, která nemá setter ani getter, aby se na ní dal pověsit Observer
+            changeCount: {
+                enumerable: false,
+                value: 0,
+                writable: true,
+            },
+            //toto je vlastnost, která nemá setter ani getter, aby se na ní dal pověsit Observer
+            changeSavingStateCount: {
+                enumerable: false,
+                value: 0,
+                writable: true,
+            },
+
+            dirty: {
+                enumerable: true,
+                value: false,
+                writable: true
+            },
+            saveState: {
+                enumerable: true,
+                value: 'loaded',
+                writable: true,
+            }
+        });
+        
+
+        //METODY
+        this.setDirty=function(){
+            this.dirty = true;
+            this.changeCount++;
+        };
+        this.setSaveState=function(state){
+            saveState=state;
+            changeSavingStateCount++
+        }
+        this.save=function(){
+            this.setSaveState('saving');
+        }
+        this.saved=function(){
+            this.setSaveState('loaded');
+            this.dirty=false;
+        }
+    }
+
+        //STATICKE
+    if (typeof PuffEvent.instances === 'undefined'){
+        PuffEvent.instances = {};
+    }
+    if (typeof PuffEvent.colorDir === 'undefined'){
+        PuffEvent.colorDir=new PuffColorDir();
+    }
+    if (typeof PuffEvent.getPuffEvent==='undefined'){
+        PuffEvent.getPuffEvent = function(googleCalEvent,calendarType){
+            if (!PuffEvent.instances[googleCalEvent.id]){
+                return new PuffEvent(googleCalEvent,calendarType);
+            }
+            //už máme v identitní mapě, nastavíme nové hodnoty a vracíme...
+            PuffEvent.instances[googleCalEvent.id].event = googleCalEvent;
+            return PuffEvent.instances[googleCalEvent.id];
+        };
+    }
+
+
+    return PuffEvent;
+}());
+</script>

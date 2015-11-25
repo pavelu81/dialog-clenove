@@ -1,0 +1,138 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<script src='../../bower_components/moment/min/moment-with-locales.min.js'></script>
+<link rel="import" href="../../bower_components/observe-js/observe-js.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+
+
+
+<dom-module id="puff-agenda-event-form">
+	<template>
+		<style>
+		  :host {
+			display: block;
+		  }
+		</style>
+		
+		<!--obsah-->
+		<div>
+			<paper-toolbar><iron-icon icon="event"></iron-icon><div class="title">{{event.summary}}</div></paper-toolbar>
+			<div class="layout horizontal">
+				<div>
+					<paper-input label="Název" value="{{event.summary}}"></paper-input>
+					<div class="layout justified horizontal">
+						<paper-input id='inpTimeFrom' label="Od" value="{{timeFrom}}" type="{{dateType}}" class=""></paper-input>
+						<paper-input id='inpTimeTo' label="Do" value="{{timeTo}}" type="{{dateType}}" class=""></paper-input>
+						<paper-toggle-button checked="{{event.wholeday}}" style="margin: 32px">Celodenní</paper-toggle-button>
+					</div>
+					<paper-textarea label="Popis" value="{{event.description}}"></paper-textarea>
+				</div>
+				<pre>{{event.debug}}</pre>
+			</div>
+		</div>
+	</template>
+
+	<script>
+	/* globals ObjectObserver, moment */
+	(function () {
+		'use strict';
+		Polymer({
+			is: 'puff-agenda-event-form',
+			properties: {
+				event: {
+					type: Object,
+					notify: true,
+					reflectToAttribute: true,
+					observer: 'eventSet'
+				},
+				dateType: {
+					type: String,
+					computed: 'computeDateInputType(event.wholeday)'
+				},
+				timeFrom: {
+					type: String,
+					notify: false,
+					observer: 'timeFromChanged',
+				},
+				timeTo: {
+					type: String,
+					notify: false,
+					observer: 'timeToChanged',
+				},
+
+			},
+			ready: function() {
+			},
+			eventSet: function(){
+				this.eventObserver = new ObjectObserver(this.event);
+				this.eventObserver.open(this.eventChanged,this);
+				this.setStyles();
+				this.setFormTimeFieldsFromEvent();
+			},
+			eventChanged: function(){
+				for (var k in this.event){
+					this.notifyPath('event.'+k,this.event[k]);
+				}
+				this.notifyPath('event.debug',this.event.debug);
+				this.setStyles();
+				this.setFormTimeFieldsFromEvent();
+			},
+			setStyles: function(){
+				this.customStyle['--paper-toolbar-color']=this.event.colorSetToolbar.Text;
+				this.customStyle['--paper-toolbar-background']=this.event.colorSetToolbar.Background;
+				this.updateStyles();
+			},
+			computeDateInputType: function(wholeday){
+				//return '';
+				return wholeday?'date':'datetime-local';
+			},
+			computeDateFormat: function(wholeday){
+				return wholeday?'YYYY-MM-DD':'YYYY-MM-DDTHH:mm';
+			},
+			timeFromChanged: function(newVal,oldVal){
+				this.timeChanged('from',newVal,oldVal);
+			},
+			timeToChanged: function(newVal,oldVal){
+				this.timeChanged('to',newVal,oldVal);
+			},
+			timeChanged: function(target,newVal,oldVal){
+				if (newVal===oldVal){
+					return;
+				}
+				if (!this.event){
+					return;
+				}
+				var parsedMoment = moment(newVal,this.computeDateFormat(this.event.wholeday));
+				if (!parsedMoment.isValid()){
+					 return;
+				}
+
+
+				if (target==='from'){
+					this.event.timeFrom=parsedMoment.toDate();
+				} 
+				else if (target === 'to') {
+					this.event.timeTo=parsedMoment.toDate();
+				}
+			},
+			setFormTimeFieldsFromEvent: function(){
+				var dateFormat = this.computeDateFormat(this.event.wholeday);
+				var timeFromCandidate=moment(this.event.timeFrom).format(dateFormat);
+				var timeToCandidate=moment(this.event.timeTo).format(dateFormat);
+				if (timeFromCandidate!==this.timeFrom){
+					this.timeFrom=timeFromCandidate;
+				}
+				if (timeToCandidate!==this.timeTo){
+					this.timeTo=timeToCandidate;
+				}
+			}
+
+		});
+	})();
+	</script>
+</dom-module>

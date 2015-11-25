@@ -109,7 +109,7 @@
 									<div class$="{{computeDayCSSStyle('puff-agenda-calendarType content',date.date,holidays)}}" on-dragover="allowDrop">
 										<template is="dom-repeat" 
 											items="{{events}}" as="event"
-											filter="{{filterForCalendarTypeAndDate(calendarType,date.date)}}" observe="changeSavingStateCount">
+											filter="{{filterForCalendarTypeAndDate(calendarType,date.date)}}" observe="reloadCount">
 											<puff-agenda-event event="{{event}}" date="{{date.date}}" on-puff-event-tap="eventTap"></puff-agenda-event>
 										</template>
 									</div>

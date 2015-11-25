@@ -100,7 +100,6 @@
 				this.eventObserver.open(this.eventChanged,this);
 			},
 			eventChanged: function(added, removed, changed/*, getOldValueFn - zatim nepotrebujeme*/){
-				console.log(changed);
 				var k;
 				for (k in this.event){
 					this.notifyPath('event.'+k,this.event[k]);

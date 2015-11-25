@@ -176,6 +176,30 @@ var PuffEvent = (function(){
                 }
 
             },
+            allowActions:{ //vrací info, co všechno lze s událostí dělat
+                enumerable: true,
+                get: function(){
+                    var allowance = {
+                        save: false,
+                        reload: false,
+                        edit: false
+                    };
+                    if (this.pending){
+                        return allowance;
+                    };
+
+                    allowance.save = this.saveState==='new' || this.dirty;
+                    allowance.reload = this.saveState !== 'new' && this.dirty;
+                    allowance.edit = true;
+
+                    return allowance;
+                }
+            }, 
+           
+            pending: {
+                enumerable: true,
+                get: function(){return (this.saveState === 'loading' || this.saveState === 'saving');}
+            },
 
             debug: {
                 //enumerable: true,
@@ -185,24 +209,23 @@ var PuffEvent = (function(){
             //OBSERVABLES
             //vlastnosti, ktere jsou enumerable false a nemaji getter a setter, takze lze na ne pověsit observer
             //obvykle pouziji observer tak, ze propaguje enumerable vlastnosti plus tu nonenumerable, ktera zmenu vyhodila
-            //treba filtry polymeru pak muzu povesit jenom na zmenu changesavingstatecount
-            changeCount: {
+            //treba filtry polymeru pak muzu povesit jenom na zmenu reloadCount
+            changeCount: { //počet změn
                 enumerable: false,
                 value: 0,
                 writable: true,
             },
-            changeSavingStateCount: {
-                enumerable: false,
+            reloadCount: { //počet reloadu z kalendáře
+                enumarable: false,
                 value: 0,
                 writable: true,
             },
-
-            dirty: {
+            dirty: { //obsahuje neuložené změny
                 enumerable: true,
                 value: false,
                 writable: true
             },
-            saveState: {
+            saveState: { //stav ukládání
                 enumerable: true,
                 value: 'loaded',
                 writable: true,
@@ -211,20 +234,56 @@ var PuffEvent = (function(){
         
 
         //METODY
-        this.setDirty=function(){
-            this.dirty = true;
+        this.setDirty=function(value){
+            value=value!==false?true:false;
+            this.dirty = value;
             this.changeCount++;
         };
-        this.setSaveState=function(state){
-            this.saveState=state;
-            this.changeSavingStateCount++;
+        this.setEvent=function(eventResource){
+            this.event=eventResource;
+            this.saveState='loaded';
+            this.setDirty(false);
+            this.reloadCount++;
         };
         this.save=function(){
-            this.setSaveState('saving');
+            this.saveState='saving';
+            try{
+                window.gapi.client.calendar.events.update({
+                    calendarId: this.event.organizer.email,
+                    eventId: this.event.id,
+                    resource: this.event
+                }).then(this.saveFulfilled,this.saveRejected,this);
+            }
+            catch(e){
+                console.error('Saving call exception: %s PuffEvent: %o', e, this);
+            }
         };
-        this.saved=function(){
-            this.setSaveState('loaded');
-            this.dirty=false;
+        this.saveRejected=function(reason){
+            console.error('Save of PuffEvent %o rejected because of %o',this,reason);
+        };
+        this.saveFulfilled=function(response){
+            console.info('Save of PuffEvent %o fullfilled with response %o', this, response);
+            this.setEvent(response.result);
+        };
+        this.load=function(){
+            this.saveState='loading';
+            try{
+                window.gapi.client.calendar.events.get({
+                    calendarId: this.event.organizer.email,
+                    eventId: this.event.id
+                }).then(this.loadFulfilled,this.loadRejected,this);
+            }
+            catch(e){
+                console.error('Loading call exception: %s PuffEvent: %o', e, this);
+            }
+
+        };
+        this.loadRejected=function(reason){
+            console.error('Save of PuffEvent %o rejected because of %o',this,reason);
+        };
+        this.loadFulfilled=function(response){
+            console.info('Load of PuffEvent %o fullfilled with response %o', this, response);
+            this.setEvent(response.result);
         };
     }
 

@@ -4,6 +4,7 @@
 <link rel="import" href="../../bower_components/observe-js/observe-js.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
@@ -21,18 +22,24 @@
 		
 		<!--obsah-->
 		<div>
-			<paper-toolbar><iron-icon icon="event"></iron-icon><div class="title">{{event.summary}}</div></paper-toolbar>
+			<paper-toolbar>
+				<iron-icon icon="event"></iron-icon>
+				<div class="title">{{event.summary}}</div>
+				<paper-icon-button icon="save" disabled="{{!event.allowActions.edit}}"></paper-icon-button>
+			</paper-toolbar>
 			<div class="layout horizontal">
 				<div>
-					<paper-input label="Název" value="{{event.summary}}"></paper-input>
+					<paper-input label="Název" value="{{event.summary}}" disabled="{{!event.allowActions.edit}}"></paper-input>
 					<div class="layout justified horizontal">
-						<paper-input id='inpTimeFrom' label="Od" value="{{timeFrom}}" type="{{dateType}}" class=""></paper-input>
-						<paper-input id='inpTimeTo' label="Do" value="{{timeTo}}" type="{{dateType}}" class=""></paper-input>
-						<paper-toggle-button checked="{{event.wholeday}}" style="margin: 32px">Celodenní</paper-toggle-button>
+						<paper-input id='inpTimeFrom' label="Od" value="{{timeFrom}}" type="{{dateType}}" class="" disabled="{{!event.allowActions.edit}}"></paper-input>
+						<paper-input id='inpTimeTo' label="Do" value="{{timeTo}}" type="{{dateType}}" class="" disabled="{{!event.allowActions.edit}}"></paper-input>
+						<paper-toggle-button checked="{{event.wholeday}}" style="margin: 32px" disabled="{{!event.allowActions.edit}}">Celodenní</paper-toggle-button>
 					</div>
-					<paper-textarea label="Popis" value="{{event.description}}"></paper-textarea>
+					<paper-textarea label="Popis" value="{{event.description}}" disabled="{{!event.allowActions.edit}}"></paper-textarea>
+								
 				</div>
 				<pre>{{event.debug}}</pre>
+
 			</div>
 		</div>
 	</template>

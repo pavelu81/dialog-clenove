@@ -96,7 +96,34 @@ var PuffEvent = (function(){
             },
             wholeday: {
                 enumerable: true,
-                get: function(){return this.event.start.date?true:false;}
+                get: function(){return this.event.start.date?true:false;},
+                set: function(value){
+                    if (this.wholeday !== value){
+                        //zapamatujeme původní interval
+                        var origFrom = this.timeFrom;
+                        var origTo = this.timeTo;
+                        //přehodíme vlastnosti objektů start a end na správné
+                        switch(value){
+                            case true:
+                                delete this.event.start.dateTime;
+                                this.event.start.date='.';
+                                delete this.event.end.dateTime;
+                                this.event.end.date='.';
+                                break;
+                            case false:
+                                delete this.event.start.date;
+                                this.event.start.dateTime=new Date();
+                                delete this.event.end.date;
+                                this.event.end.dateTime=new Date();
+                                break;
+                            default:
+                                return;
+                        }
+                        //zapíšeme původní rozsah
+                        this.timeFrom = origFrom;
+                        this.timeTo = origTo;
+                    }
+                }
             },
             timeFrom: {
                 enumerable: true,
@@ -159,13 +186,11 @@ var PuffEvent = (function(){
             //vlastnosti, ktere jsou enumerable false a nemaji getter a setter, takze lze na ne pověsit observer
             //obvykle pouziji observer tak, ze propaguje enumerable vlastnosti plus tu nonenumerable, ktera zmenu vyhodila
             //treba filtry polymeru pak muzu povesit jenom na zmenu changesavingstatecount
-            //toto je vlastnost, která nemá setter ani getter, aby se na ní dal pověsit Observer
             changeCount: {
                 enumerable: false,
                 value: 0,
                 writable: true,
             },
-            //toto je vlastnost, která nemá setter ani getter, aby se na ní dal pověsit Observer
             changeSavingStateCount: {
                 enumerable: false,
                 value: 0,

@@ -184,9 +184,10 @@ var PuffEvent = (function(){
                         reload: false,
                         edit: false
                     };
+                    
                     if (this.pending){
                         return allowance;
-                    };
+                    }
 
                     allowance.save = this.saveState==='new' || this.dirty;
                     allowance.reload = this.saveState !== 'new' && this.dirty;

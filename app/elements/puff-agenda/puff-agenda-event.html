@@ -108,7 +108,10 @@
 					this.notifyPath('event.'+k,this.event[k]);
 				}
 			},
-			regularTap: function(){this.fire('puff-event-tap',{puffEvent: this.event, date: this.date});},
+			regularTap: function(e,detail){
+				e.cancelBubble=true;
+				this.fire('puff-event-tap',{puffEvent: this.event, date: this.date});
+			},
 			mouseover: function(){this.elevation=2;},
 			mouseout: function(){this.elevation=1;},
 		});

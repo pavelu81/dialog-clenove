@@ -106,7 +106,7 @@
 								</div>
 							</div>
 							<template is="dom-repeat" items="{{calendarTypes}}" as="calendarType">
-									<div class$="{{computeDayCSSStyle('puff-agenda-calendarType content',date.date,holidays)}}" on-dragover="allowDrop">
+									<div class$="{{computeDayCSSStyle('puff-agenda-calendarType content',date.date,holidays)}}" on-dragover="allowDrop" on-tap="outTap">
 										<template is="dom-repeat" 
 											items="{{events}}" as="event"
 											filter="{{filterForCalendarTypeAndDate(calendarType,date.date)}}" observe="reloadCount">
@@ -228,6 +228,9 @@
 
 			eventTap: function(e,detail) {
 				this.$.eventForm.event = detail.puffEvent;
+			},
+			outTap: function(e,detail) {
+				this.$.eventForm.event = null;
 			},
 			
 			

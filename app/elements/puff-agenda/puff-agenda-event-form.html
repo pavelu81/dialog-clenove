@@ -92,8 +92,9 @@
 				this.setFormTimeFieldsFromEvent();
 			},
 			setStyles: function(){
-				this.customStyle['--paper-toolbar-color']=this.event.colorSetToolbar.Text;
-				this.customStyle['--paper-toolbar-background']=this.event.colorSetToolbar.Background;
+				this.customStyle['--text-primary-color']=this.event.colorSetToolbar.Text;
+				this.customStyle['--default-primary-color']=this.event.colorSetToolbar.Background;
+
 				this.updateStyles();
 			},
 			computeDateInputType: function(wholeday){

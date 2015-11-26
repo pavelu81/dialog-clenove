@@ -190,7 +190,7 @@ var PuffEvent = (function(){
                     }
 
                     allowance.save = this.saveState==='new' || this.dirty;
-                    allowance.reload = this.saveState !== 'new' && this.dirty;
+                    allowance.reload = this.saveState !== 'new' /*&& this.dirty*/;
                     allowance.edit = true;
 
                     return allowance;

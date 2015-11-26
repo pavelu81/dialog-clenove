@@ -7,43 +7,61 @@
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
 
-
-
 <dom-module id="puff-agenda-event-form">
 	<template>
-		<style>
-		  :host {
-			display: block;
-		  }
-		</style>
-		
-		<!--obsah-->
-		<div>
-			<paper-toolbar>
-				<iron-icon icon="event"></iron-icon>
-				<div class="title">{{event.summary}}</div>
-				<paper-icon-button icon="save" disabled="{{!event.allowActions.edit}}"></paper-icon-button>
-			</paper-toolbar>
-			<div class="layout horizontal">
-				<div>
-					<paper-input label="Název" value="{{event.summary}}" disabled="{{!event.allowActions.edit}}"></paper-input>
-					<div class="layout justified horizontal wrap">
-							<paper-checkbox checked="{{event.wholeday}}"  style="margin-top: 32px; margin-right: 32px" class="" disabled="{{!event.allowActions.edit}}">Celodenní</paper-checkbox>
-					<div class="layout justified horizontal wrap">
-							<paper-input id='inpTimeFrom' label="Od" value="{{timeFrom}}" type="{{dateType}}" style="" class="" disabled="{{!event.allowActions.edit}}"></paper-input>
-							<paper-input id='inpTimeTo' label="Do" value="{{timeTo}}" type="{{dateType}}" style="" class="" disabled="{{!event.allowActions.edit}}"></paper-input>
-					</div>
-					</div>
-					<paper-textarea label="Popis" value="{{event.description}}" disabled="{{!event.allowActions.edit}}"></paper-textarea>
-								
-				</div>
-				<pre>{{event.debug}}</pre>
+		<template is="dom-if" if="{{hasEvent}}">
+			<style>
+				:host {
+					display: block;
+					--paper-button-ink-color: var(--default-primary-color);
+				}
+				paper-button.colorful {
+					color: var(--default-primary-color);
+				}
+				paper-button[disabled] {
+					background: transparent;
+					color: var(--disabled-text-color);
+				}
 
+			</style>
+
+			<!--obsah-->
+			<div>
+				<paper-toolbar>
+					<iron-icon icon="event"></iron-icon>
+					<div class="title">{{event.summary}}</div>
+					<paper-icon-button icon="refresh" hidden="{{!event.allowActions.reload}}" on-tap="callReload"></paper-icon-button>
+					<paper-icon-button icon="check" hidden="{{!event.allowActions.save}}" on-tap="callSave"></paper-icon-button>
+				</paper-toolbar>
+				<div class="layout horizontal">
+					<div class="flex">
+						<paper-input label="Název" value="{{event.summary}}" disabled="{{!event.allowActions.edit}}"></paper-input>
+						<div class="layout horizontal wrap">
+							<paper-checkbox checked="{{event.wholeday}}"  style="margin-top: 32px; margin-right: 32px" class="" disabled="{{!event.allowActions.edit}}">Celodenní</paper-checkbox>
+							<div class="layout horizontal wrap">
+								<paper-input id='inpTimeFrom' label="Od" value="{{timeFrom}}" type="{{dateType}}" style="" class="" disabled="{{!event.allowActions.edit}}"></paper-input>
+								<paper-input id='inpTimeTo' label="Do" value="{{timeTo}}" type="{{dateType}}" style="" class="" disabled="{{!event.allowActions.edit}}"></paper-input>
+							</div>
+						</div>
+						<paper-textarea label="Popis" value="{{event.description}}" disabled="{{!event.allowActions.edit}}"></paper-textarea>
+					</div>
+				</div>
 			</div>
-		</div>
+			<div>
+				<paper-button class="colorful" disabled="{{!event.allowActions.save}}" on-tap="callSave"><iron-icon icon="check"></iron-icon>Ulož</paper-button>
+				<paper-button on-tap="callReload"><iron-icon icon="refresh" disabled="{{!event.allowActions.refresh}}"></iron-icon>Obnov</paper-button>
+			</div>
+			<template is="dom-if" if="{{canDebug}}">
+				<div>
+					<paper-checkbox style="margin-top: 32px; margin-bottom: 32px;" checked="{{debug}}">DEBUG</paper-checkbox>
+					<pre hidden="{{!debug}}">{{event.debug}}</pre>
+				</div>
+			</template>
+		</template>
 	</template>
 
 	<script>
@@ -73,6 +91,22 @@
 					notify: false,
 					observer: 'timeToChanged',
 				},
+				debug: {
+					type: Boolean,
+					notify: true,
+					value: false,
+				},
+				canDebug: {
+					type: Boolean,
+					notify: true,
+					value: false,
+				},
+				hasEvent: {
+					type: Boolean,
+					notify: true,
+					readonly: true,
+					value: false
+				}
 
 			},
 			ready: function() {
@@ -82,6 +116,7 @@
 				this.eventObserver.open(this.eventChanged,this);
 				this.setStyles();
 				this.setFormTimeFieldsFromEvent();
+				this.hasEvent = this.event!==undefined;
 			},
 			eventChanged: function(){
 				for (var k in this.event){
@@ -140,7 +175,14 @@
 				if (timeToCandidate!==this.timeTo){
 					this.timeTo=timeToCandidate;
 				}
-			}
+			},
+			callSave: function(){
+				this.event.save();
+			},
+			callReload: function(){
+				this.event.load();
+			},
+
 
 		});
 	})();

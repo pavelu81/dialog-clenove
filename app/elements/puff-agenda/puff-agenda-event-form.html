@@ -6,7 +6,7 @@
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
-<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
 
@@ -30,10 +30,12 @@
 			<div class="layout horizontal">
 				<div>
 					<paper-input label="Název" value="{{event.summary}}" disabled="{{!event.allowActions.edit}}"></paper-input>
-					<div class="layout justified horizontal">
-						<paper-input id='inpTimeFrom' label="Od" value="{{timeFrom}}" type="{{dateType}}" class="" disabled="{{!event.allowActions.edit}}"></paper-input>
-						<paper-input id='inpTimeTo' label="Do" value="{{timeTo}}" type="{{dateType}}" class="" disabled="{{!event.allowActions.edit}}"></paper-input>
-						<paper-toggle-button checked="{{event.wholeday}}" style="margin: 32px" disabled="{{!event.allowActions.edit}}">Celodenní</paper-toggle-button>
+					<div class="layout justified horizontal wrap">
+							<paper-checkbox checked="{{event.wholeday}}"  style="margin-top: 32px; margin-right: 32px" class="" disabled="{{!event.allowActions.edit}}">Celodenní</paper-checkbox>
+					<div class="layout justified horizontal wrap">
+							<paper-input id='inpTimeFrom' label="Od" value="{{timeFrom}}" type="{{dateType}}" style="" class="" disabled="{{!event.allowActions.edit}}"></paper-input>
+							<paper-input id='inpTimeTo' label="Do" value="{{timeTo}}" type="{{dateType}}" style="" class="" disabled="{{!event.allowActions.edit}}"></paper-input>
+					</div>
 					</div>
 					<paper-textarea label="Popis" value="{{event.description}}" disabled="{{!event.allowActions.edit}}"></paper-textarea>
 								

@@ -7,6 +7,7 @@
 <link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="puff-agenda-event.html">
@@ -25,6 +26,7 @@
 		<style>
 		  :host {
 			display: block;
+			--paper-dialog-background-color: white;
 		  }
 		  .puff-agenda {
 		  }
@@ -81,10 +83,17 @@
 		  	border-right: 1px solid #DDD;
 
 		  }
+		  
+		  #eventDialog > *:first-child {
+		  	margin: 0px;
+		  	padding: 0px;
+		  }
 		</style>
 
 		<div class="puff-agenda">
-		<puff-agenda-event-form id="eventForm"></puff-agenda-event-form>
+		<paper-dialog id="eventDialog" modal="true">
+			<puff-agenda-event-form id="eventForm"></puff-agenda-event-form>
+		</paper-dialog>
 		<!--
 		<template is="dom-repeat" items="{{events}}" as="event">
 			<puff-agenda-event event="{{event}}" date="{{date.date}}" on-puff-event-tap="eventTap"></puff-agenda-event>
@@ -228,8 +237,9 @@
 
 			eventTap: function(e,detail) {
 				this.$.eventForm.event = detail.puffEvent;
+				this.$.eventDialog.open();
 			},
-			outTap: function(e,detail) {
+			outTap: function() {
 				this.$.eventForm.event = null;
 			},
 			

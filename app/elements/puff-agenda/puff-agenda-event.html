@@ -108,7 +108,7 @@
 					this.notifyPath('event.'+k,this.event[k]);
 				}
 			},
-			regularTap: function(e,detail){
+			regularTap: function(e/*,detail*/){
 				e.cancelBubble=true;
 				this.fire('puff-event-tap',{puffEvent: this.event, date: this.date});
 			},

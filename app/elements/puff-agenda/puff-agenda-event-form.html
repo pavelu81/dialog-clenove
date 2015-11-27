@@ -17,7 +17,7 @@
 			<style>
 				:host {
 					display: block;
-					--paper-button-ink-color: var(--default-primary-color);
+					--paper-button-ink-color: var(--default-primary-color);	
 				}
 				paper-button.colorful {
 					color: var(--default-primary-color);
@@ -30,13 +30,14 @@
 			</style>
 
 			<!--obsah-->
-			<div>
-				<paper-toolbar>
-					<iron-icon icon="event"></iron-icon>
-					<div class="title">{{event.summary}}</div>
-					<paper-icon-button icon="refresh" hidden="{{!event.allowActions.reload}}" on-tap="callReload"></paper-icon-button>
-					<paper-icon-button icon="check" hidden="{{!event.allowActions.save}}" on-tap="callSave"></paper-icon-button>
-				</paper-toolbar>
+			<paper-toolbar>
+				<iron-icon icon="event"></iron-icon>
+				<div class="title">{{event.summary}}</div>
+				<paper-icon-button icon="refresh" hidden="{{!event.allowActions.reload}}" on-tap="callReload"></paper-icon-button>
+				<paper-icon-button icon="check" hidden="{{!event.allowActions.save}}" on-tap="callSave"></paper-icon-button>
+			</paper-toolbar>
+
+			<div style="padding: 0 24px;">
 				<div class="layout horizontal">
 					<div class="flex">
 						<paper-input label="Název" value="{{event.summary}}" disabled="{{!event.allowActions.edit}}"></paper-input>
@@ -50,17 +51,17 @@
 						<paper-textarea label="Popis" value="{{event.description}}" disabled="{{!event.allowActions.edit}}"></paper-textarea>
 					</div>
 				</div>
-			</div>
-			<div>
-				<paper-button class="colorful" disabled="{{!event.allowActions.save}}" on-tap="callSave"><iron-icon icon="check"></iron-icon>Ulož</paper-button>
-				<paper-button on-tap="callReload" disabled="{{!event.allowActions.reload}}"><iron-icon icon="refresh" disabled="{{!event.allowActions.refresh}}"></iron-icon>Obnov</paper-button>
-			</div>
-			<template is="dom-if" if="{{canDebug}}">
 				<div>
-					<paper-checkbox style="margin-top: 32px; margin-bottom: 32px;" checked="{{debug}}">DEBUG</paper-checkbox>
-					<pre hidden="{{!debug}}">{{event.debug}}</pre>
+					<paper-button class="colorful" disabled="{{!event.allowActions.save}}" on-tap="callSave"><iron-icon icon="check"></iron-icon>Ulož</paper-button>
+					<paper-button on-tap="callReload" disabled="{{!event.allowActions.reload}}"><iron-icon icon="refresh" disabled="{{!event.allowActions.refresh}}"></iron-icon>Obnov</paper-button>
 				</div>
-			</template>
+				<template is="dom-if" if="{{canDebug}}">
+					<div>
+						<paper-checkbox style="margin-top: 32px; margin-bottom: 32px;" checked="{{debug}}">DEBUG</paper-checkbox>
+						<pre hidden="{{!debug}}">{{event.debug}}</pre>
+					</div>
+				</template>
+			</div>
 		</template>
 	</template>
 

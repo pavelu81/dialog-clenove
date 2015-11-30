@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="Ferman Divadelního spolku DIALOG">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="generator" content="Polymer Starter Kit" />
+	<title>Členové DIALOG</title>
+
+	<!-- Web Application Manifest -->
+	<link rel="manifest" href="manifest.json">
+
+	<!-- build:css styles/main.css -->
+	<link rel="stylesheet" href="styles/main.css">
+	<!-- endbuild-->
+
+	<!-- build:js bower_components/webcomponentsjs/webcomponents-lite.min.js -->
+	<script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+	<!-- endbuild -->
+
+	<!-- will be replaced with elements/elements.vulcanized.html -->
+	<link rel="import" href="elements/elements.html">
+	<!-- endreplace-->
+
+	<!-- For shared styles, shared-styles.html import in elements.html -->
+	<style is="custom-style" include="shared-styles"></style>
+</head>
+
+<body unresolved class="fullbleed layout vertical">
+<span id="browser-sync-binding"></span>
+<template is="dom-bind" id="app">
+	<div hidden="[[signed]]">
+		<h1>Dobrý den,</h1>
+		<p>vítejte na členském portálu Divadelního spolku DIALOG. Tento je přístupný pouze členům, prosím přihlaste se svým účtem.</p>
+		<p>Nejste-li členem Dialogu, směle navštivte naše veřejné internetové stránky <a href="http://web.dsdialog.org/">DS DIALOG</a>.</p>
+	</div>
+	<div hidden="[[!signed]]">
+		<h1>FERMAN</h1>
+		<p>Tohle je nová verze fermanu. Jste v pořádku přihlášeni.</p>
+	</div>
+	<div>
+		<google-signin 
+		id="gsignin"
+		client-id="901475235015-9gp0m5tr7qj41gmtf9f9ebarj6cvkc42.apps.googleusercontent.com"
+		label-signin="Přihlásit"
+		label-signout="Odhlásit"
+		hosted-domain="dsdialog.org"
+		>
+		</google-signin>
+	</div>
+	<puff-agenda 
+		id='ferman'
+		requested-calendars='[
+		{"calendarType": "Ferman",		"id": "dsdialog@gmail.com","summary": "Vlaky"},
+		{"calendarType": "Ferman",		"id": "2r5vpinpb0h18iojn1hdst2db8@group.calendar.google.com","summary": "Bílý králík"},
+		{"calendarType": "Ferman",		"id": "ccro35on02gol2plnokr45ocns@group.calendar.google.com","summary": "Herkules a Augiášův chlév"},
+		{"calendarType": "Ferman",		"id": "kp17fro0t0su28kodt2l565u90@group.calendar.google.com","summary": "Kluk z plakátu"},
+		{"calendarType": "Ferman",		"id": "rasfhq8guscc0foijv68bmpnq4@group.calendar.google.com","summary": "Dva na kanapi"},
+		{"calendarType": "Ferman",		"id": "ghmbk1e6gfe5cpudpgop8nu6t8@group.calendar.google.com","summary": "DS Dialog"},
+		{"calendarType": "Ferman",		"id": "dsdialog.org_lt66tnmobj380edrpq9t671ols@group.calendar.google.com","summary": "Předběžné termíny"},
+		{"calendarType": "Ferman",		"id": "6m6lv5kuctdjg1qtri8re3tj8o@group.calendar.google.com","summary": "Limonádový Joe"},
+		{"calendarType": "Ferman",		"id": "aca8jhr6vj39oo6i8t4q7u5j34@group.calendar.google.com","summary": "O kočičím zpívání"},
+		{"calendarType": "Omluvenky",	"id": "dsdialog.org_hgp12kdgv6dpdo5a011ip0p7v4@group.calendar.google.com","summary": "Omluvenky DIALOG"},
+		{"calendarType": "Holidays",	"id": "cs.czech#holiday@group.v.calendar.google.com","summary": "Svátky"}
+		]'
+	>
+	</puff-agenda>
+</template>
+
+<!-- build:js scripts/app.js -->
+<script src="scripts/app.js"></script>
+<script src="scripts/signin.js"></script>
+<!-- endbuild-->
+
+</body>
+</html>

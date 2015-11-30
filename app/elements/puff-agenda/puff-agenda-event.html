@@ -113,6 +113,7 @@
 			},
 			regularTap: function(e/*,detail*/){
 				e.cancelBubble=true;
+				e.stopPropagation();
 				this.fire('puff-event-tap',{puffEvent: this.event, date: this.date});
 			},
 			mouseover: function(){this.elevation=2;},

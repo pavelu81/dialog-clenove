@@ -134,6 +134,7 @@
 	/* globals moment, PuffEvent */
 	(function () {
 		'use strict';
+		//console.log('### puff-agenda');
 		moment.locale('cs',{
 			monthsShort: 'Led_Úno_Bře_Dub_Kvě_Čer_Čvc_Srp_Zář_Říj_Lis_Pro'.split('_'),
 
@@ -191,6 +192,7 @@
 				}
 			},
 			ready: function() {
+				//console.log('### puff-agenda ready');
 				var self = this;
 				this.$.calAPI.addEventListener('google-api-load',function(e){return self.calAPILoaded(e);});
 				this.$.calSigninAware.addEventListener('google-signin-aware-success',function(e){return self.signIn(e);});
@@ -200,46 +202,59 @@
 				//jQuery(this.$.calendar).fullCalendar({});
 			},
 			render: function() {
+				//console.log('### puff-agenda render');
 				//jQuery(this.$.calendar).fullCalendar('render');
 			},
 			
 			_generalObserver: function(e){
+				//console.log('### puff-agenda generalObserver');
 				console.log(e);
 			},
 			
 
 			//API a PRIHLASOVANI
 			signedIn: false,
-			_calApiReady: function() {return this.signedIn && this.$.calAPI.api;},
+			_calApiReady: function() {
+				//console.log('### puff-agenda _calApiReady');
+				return this.signedIn && this.$.calAPI.api;
+			},
 			calAPILoaded: function () {
+				//console.log('### puff-agenda calAPILoaded');
 				if (this._calApiReady()) {
 					console.log('CalAPI ready');
 					this._reloadAllEvents();
 				}
 			},
 			signIn: function () {
+				//console.log('### puff-agenda signIn');
 				console.log('calendar signin aware success');
 				this.signedIn = true;
 				this.calAPILoaded();
 			},
 			signOut: function () {
+				//console.log('### puff-agenda signOut');
+				this.events=[];
 				this.signedIn = false;
 			},
 
 			//DRAG&DROP
 			allowDrop: function(ev) {
+				//console.log('### puff-agenda allowDrop');
 				ev.preventDefault();
 			},
 
 			drop: function(ev){
+				//console.log('### puff-agenda drop');
 				ev.preventDefault();
 			},
 
 			eventTap: function(e,detail) {
+				//console.log('### puff-agenda eventTap');
 				this.$.eventForm.event = detail.puffEvent;
 				this.$.eventDialog.open();
 			},
 			outTap: function() {
+				//console.log('### puff-agenda outTap');
 				this.$.eventForm.event = null;
 			},
 			
@@ -249,6 +264,7 @@
 			//CALENDARS AND EVENTS
 			_calendars: {},
 			_calendarsChanged: function() {
+				//console.log('### puff-agenda calenarsChanged');
 				console.log('_calendarsChanged');
 				this._calendars={};
 				var calendarTypes={};
@@ -267,11 +283,14 @@
 			},
 			
 			_reloadAllEvents: function(){
+				//console.log('### puff-agenda _reloadAllEvents');
+				//return;
 				var self = this;
 				if (!this._calApiReady()){return;}
 				for (var k in this._calendars){self._reloadEventsFromCal(this._calendars[k].id);}
 			},
 			_reloadEventsFromCal: function(calendarId) {
+				//console.log('### puff-agenda _reloadEventsFromCal');
 				if (!this._calApiReady()){return;}
 				var self = this;
 				this.$.calAPI.api.events.list({
@@ -282,6 +301,7 @@
 				}).then(function(response){return self._eventsReceived(calendarId,response);}, function(reason){console.log('Events load fail: '+calendarId);console.log(reason);});
 			},
 			_eventsReceived: function(calendarId, response){
+				//console.log('### puff-agenda _eventsReceived');
 				if (this._calendars[calendarId].calendarType!=='Holidays'){
 					this._clearCalendarEvents(calendarId);
 					for (var i=0; i<response.result.items.length; i++)
@@ -301,6 +321,7 @@
 			},
 			//vymaze z pameti udalosti konkretniho kalendare
 			_clearCalendarEvents: function(calendarId){
+				//console.log('### puff-agenda _clearCalendarEvents');
 				var events2remove = [];
 				for (var k=0; k<this.events.length; k++){
 					if (this.events[k].calendarId===calendarId){
@@ -313,6 +334,7 @@
 			},
 			
 			filterForCalendarTypeAndDate: function(calendarType,date){
+				//console.log('### puff-agenda filterForCalendarTypeAndDate');
 				var self = this;
 				return function(event){
 					return (self.filterForCalendarType(calendarType))(event) && (self.filterForDate(date))(event);
@@ -320,11 +342,13 @@
 			},
 			
 			filterForCalendarType: function(calendarType){
+				//console.log('### puff-agenda filterForCalendarType');
 				return function(event){
 					return event.calendarType === calendarType;
 				};
 			},
 			filterForDate: function(date){
+				//console.log('### puff-agenda filterForDate');
 				return function(event){
 					if (moment(date).isAfter(event.timeTo,'day')){
 						return false;
@@ -336,7 +360,7 @@
 				};
 			},
 			_computeWeeks: function(dateFrom,dateTo){
-				console.log('computeWeeks');
+				//console.log('### puff-agenda _computeWeeks');
 				var tydny = []; //nové prázdné pole týdnů
 				var tyden=tydny.push({days:[]})-1; //vytvoří nový týden, přidá ho do pole týdnů
 				var dateFromModified = moment(dateFrom).isoWeekday(1).toDate();
@@ -356,6 +380,7 @@
 			},
 			
 			_computeDays: function(dateFrom,dateTo){
+				//console.log('### puff-agenda _computeDays');
 				if (dateTo<dateFrom){return [];}
 				var momentFrom = moment(dateFrom).startOf('day');
 				var momentTo = moment(dateTo).endOf('day');
@@ -376,6 +401,7 @@
 			},
 
 			computeDayCSSStyle: function(target,date){
+				//console.log('### puff-agenda computeDayCSSStyle');
 				var typDne = 'regular';
 				var momentNow = moment();
 				for (var i = 0; i<this.holidays.length; i++){

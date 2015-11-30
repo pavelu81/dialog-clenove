@@ -95,9 +95,12 @@
 				this.customStyle['--event-color']=this.event.colorSet.Background;
 				this.updateStyles();
 			},
+			detached: function(){
+				this.detachObserver();				
+			},
+		
 			eventSet: function(){
-				this.eventObserver = new ObjectObserver(this.event);
-				this.eventObserver.open(this.eventChanged,this);
+				this.attachObserver();
 			},
 			eventChanged: function(added, removed, changed/*, getOldValueFn - zatim nepotrebujeme*/){
 				var k;
@@ -114,6 +117,18 @@
 			},
 			mouseover: function(){this.elevation=2;},
 			mouseout: function(){this.elevation=1;},
+			attachObserver: function(){
+				this.detachObserver();
+				this.eventObserver = new ObjectObserver(this.event);
+				this.eventObserver.open(this.eventChanged,this);
+			},
+			detachObserver: function(){
+				if (typeof this.eventObserver!=='undefined'){
+					this.eventObserver.close();
+				}
+
+			}
+
 		});
 	})();
 	</script>

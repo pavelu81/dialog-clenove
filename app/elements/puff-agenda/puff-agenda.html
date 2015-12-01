@@ -91,8 +91,9 @@
 		</style>
 
 		<div class="puff-agenda">
+		<array-selector id="selector" items="{{events}}" selected="{{selectedEvent}}"></array-selector>
 		<paper-dialog id="eventDialog" modal="true">
-			<puff-agenda-event-form id="eventForm"></puff-agenda-event-form>
+			<puff-agenda-event-form id="eventForm" event="{{selectedEvent}}"></puff-agenda-event-form>
 		</paper-dialog>
 		<!--
 		<template is="dom-repeat" items="{{events}}" as="event">
@@ -250,7 +251,8 @@
 
 			eventTap: function(e,detail) {
 				//console.log('### puff-agenda eventTap');
-				this.$.eventForm.event = detail.puffEvent;
+				//this.$.eventForm.event = detail.puffEvent;
+				this.$.selector.select(detail.puffEvent);
 				this.$.eventDialog.open();
 			},
 			outTap: function() {

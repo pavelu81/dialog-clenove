@@ -119,9 +119,11 @@
 			mouseover: function(){this.elevation=2;},
 			mouseout: function(){this.elevation=1;},
 			attachObserver: function(){
+				/*
 				this.detachObserver();
 				this.eventObserver = new ObjectObserver(this.event);
 				this.eventObserver.open(this.eventChanged,this);
+				*/
 			},
 			detachObserver: function(){
 				if (typeof this.eventObserver!=='undefined'){

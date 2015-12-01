@@ -207,17 +207,13 @@ var PuffEvent = (function(){
                 get: function(){return JSON.stringify(this,null,2);}
             },
 
-            //OBSERVABLES
-            //vlastnosti, ktere jsou enumerable false a nemaji getter a setter, takze lze na ne pověsit observer
-            //obvykle pouziji observer tak, ze propaguje enumerable vlastnosti plus tu nonenumerable, ktera zmenu vyhodila
-            //treba filtry polymeru pak muzu povesit jenom na zmenu reloadCount
             changeCount: { //počet změn
-                enumerable: false,
+                enumerable: true,
                 value: 0,
                 writable: true,
             },
             reloadCount: { //počet reloadu z kalendáře
-                enumarable: false,
+                enumarable: true,
                 value: 0,
                 writable: true,
             },
@@ -230,6 +226,11 @@ var PuffEvent = (function(){
                 enumerable: true,
                 value: 'loaded',
                 writable: true,
+            },
+            error:{
+                enumerable: true,
+                value:'',
+                writable: true
             }
         });
         
@@ -246,33 +247,61 @@ var PuffEvent = (function(){
             this.setDirty(false);
             this.reloadCount++;
         };
-        this.save=function(){
+        this.save=function(callback,callbackContext){
             this.saveState='saving';
+            var doneFnFulfilled=function(){
+              this.saveFulfilled.call(this,arguments);
+              if (typeof callback==='function'){
+                      callback.call(callbackContext,arguments);
+              };
+            };
+            var doneFnRejected=function(){
+              this.saveRejected.call(this,arguments);
+              if (typeof callback==='function'){
+                      callback.call(callbackContext,arguments);
+              };
+            };
+
             try{
                 window.gapi.client.calendar.events.update({
                     calendarId: this.event.organizer.email,
                     eventId: this.event.id,
                     resource: this.event
-                }).then(this.saveFulfilled,this.saveRejected,this);
+                }).then(doneFnFulfilled,doneFnRejected,this);
             }
             catch(e){
                 console.error('Saving call exception: %s PuffEvent: %o', e, this);
             }
         };
         this.saveRejected=function(reason){
-            console.error('Save of PuffEvent %o rejected because of %o',this,reason);
+            console.error('Save of PuffEvent %o rejected because of %o',this,reason[0]);
+            this.error=reason[0].result.error.message;
+            this.saveState='loaded';
         };
         this.saveFulfilled=function(response){
             console.info('Save of PuffEvent %o fullfilled with response %o', this, response);
-            this.setEvent(response.result);
+            this.error='';
+            this.setEvent(response[0].result);
         };
-        this.load=function(){
+        this.load=function(callback,callbackContext){
             this.saveState='loading';
+            var doneFnFulfilled=function(){
+              this.loadFulfilled.call(this,arguments);
+              if (typeof callback==='function'){
+                      callback.call(callbackContext,arguments);
+              };
+            };
+            var doneFnRejected=function(){
+              this.loadRejected.call(this,arguments);
+              if (typeof callback==='function'){
+                      callback.call(callbackContext,arguments);
+              };
+            };
             try{
                 window.gapi.client.calendar.events.get({
                     calendarId: this.event.organizer.email,
                     eventId: this.event.id
-                }).then(this.loadFulfilled,this.loadRejected,this);
+                }).then(doneFnFulfilled,doneFnRejected,this);
             }
             catch(e){
                 console.error('Loading call exception: %s PuffEvent: %o', e, this);
@@ -280,11 +309,14 @@ var PuffEvent = (function(){
 
         };
         this.loadRejected=function(reason){
-            console.error('Save of PuffEvent %o rejected because of %o',this,reason);
+            console.error('Save of PuffEvent %o rejected because of %o',this,reason[0]);
+            this.error=reason[0].result.error.message;
+            this.saveState='loaded';
         };
         this.loadFulfilled=function(response){
-            console.info('Load of PuffEvent %o fullfilled with response %o', this, response);
-            this.setEvent(response.result);
+            console.info('Load of PuffEvent %o fullfilled with response %o', this, response[0]);
+            this.error='';
+            this.setEvent(response[0].result);
         };
     }
 

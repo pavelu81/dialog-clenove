@@ -33,34 +33,29 @@
 			<paper-toolbar>
 				<iron-icon icon="event"></iron-icon>
 				<div class="title">{{event.summary}}</div>
-				<paper-icon-button icon="refresh" hidden="{{!event.allowActions.reload}}" on-tap="callReload"></paper-icon-button>
-				<paper-icon-button icon="check" hidden="{{!event.allowActions.save}}" on-tap="callSave"></paper-icon-button>
+				<paper-icon-button icon="refresh" hidden="[[!event.allowActions.reload]]" on-tap="callReload"></paper-icon-button>
+				<paper-icon-button icon="check" hidden="[[!event.allowActions.save]]" on-tap="callSave"></paper-icon-button>
 			</paper-toolbar>
 
 			<div style="padding: 0 24px;">
 				<div class="layout horizontal">
 					<div class="flex">
-						<paper-input label="Název" value="{{event.summary}}" disabled="{{!event.allowActions.edit}}"></paper-input>
+						<div>{{event.error}}</div>
+						<paper-input label="Název" value="{{event.summary}}" disabled="[[!event.allowActions.edit]]"></paper-input>
 						<div class="layout horizontal wrap">
-							<paper-checkbox checked="{{event.wholeday}}"  style="margin-top: 32px; margin-right: 32px" class="" disabled="{{!event.allowActions.edit}}">Celodenní</paper-checkbox>
+							<paper-checkbox checked="{{event.wholeday}}"  style="margin-top: 32px; margin-right: 32px" class="" disabled="[[!event.allowActions.edit]]">Celodenní</paper-checkbox>
 							<div class="layout horizontal wrap">
-								<paper-input id='inpTimeFrom' label="Od" value="{{timeFrom}}" type="{{dateType}}" style="" class="" disabled="{{!event.allowActions.edit}}"></paper-input>
-								<paper-input id='inpTimeTo' label="Do" value="{{timeTo}}" type="{{dateType}}" style="" class="" disabled="{{!event.allowActions.edit}}"></paper-input>
+								<paper-input id='inpTimeFrom' label="Od" value="{{timeFrom}}" type="{{dateType}}" style="" class="" disabled="[[!event.allowActions.edit]]"></paper-input>
+								<paper-input id='inpTimeTo' label="Do" value="{{timeTo}}" type="{{dateType}}" style="" class="" disabled="[[!event.allowActions.edit]]"></paper-input>
 							</div>
 						</div>
-						<paper-textarea label="Popis" value="{{event.description}}" disabled="{{!event.allowActions.edit}}"></paper-textarea>
+						<paper-textarea label="Popis" value="{{event.description}}" disabled="[[!event.allowActions.edit]]"></paper-textarea>
 					</div>
 				</div>
 				<div>
-					<paper-button class="colorful" disabled="{{!event.allowActions.save}}" on-tap="callSave"><iron-icon icon="check"></iron-icon>Ulož</paper-button>
-					<paper-button on-tap="callReload" disabled="{{!event.allowActions.reload}}"><iron-icon icon="refresh" disabled="{{!event.allowActions.refresh}}"></iron-icon>Obnov</paper-button>
+					<paper-button class="colorful" disabled="[[!event.allowActions.save]]" on-tap="callSave"><iron-icon icon="check"></iron-icon>Ulož</paper-button>
+					<paper-button on-tap="callReload" disabled="[[!event.allowActions.reload]]"><iron-icon icon="refresh"></iron-icon>Obnov</paper-button>
 				</div>
-				<template is="dom-if" if="{{canDebug}}">
-					<div>
-						<paper-checkbox style="margin-top: 32px; margin-bottom: 32px;" checked="{{debug}}">DEBUG</paper-checkbox>
-						<pre hidden="{{!debug}}">{{event.debug}}</pre>
-					</div>
-				</template>
 			</div>
 		</template>
 	</template>
@@ -92,16 +87,6 @@
 					notify: false,
 					observer: 'timeToChanged',
 				},
-				debug: {
-					type: Boolean,
-					notify: true,
-					value: false,
-				},
-				canDebug: {
-					type: Boolean,
-					notify: true,
-					value: false,
-				},
 				hasEvent: {
 					type: Boolean,
 					notify: true,
@@ -110,24 +95,38 @@
 				}
 
 			},
+			observers: [
+				'eventChanged(event.*)'
+			],
 			ready: function() {
 			},
 			eventSet: function(){
 				if (this.event!==null){
+					/*
 					this.eventObserver = new ObjectObserver(this.event);
 					this.eventObserver.open(this.eventChanged,this);
+					*/
 					this.setStyles();
 					this.setFormTimeFieldsFromEvent();
 				}
 				this.hasEvent = (this.event!==null);
 			},
-			eventChanged: function(){
-				for (var k in this.event){
-					this.notifyPath('event.'+k,this.event[k]);
+			eventChanged: function(e){
+				if (!this.hasEvent) return;
+				if (e.path!=='event.allowActions'){
+					this.notifyPath('event.allowActions',this.event.allowActions);
 				}
-				this.notifyPath('event.debug',this.event.debug);
 				this.setStyles();
 				this.setFormTimeFieldsFromEvent();
+			},
+			notifyEventProps: function(notifyHidden){
+				var k;
+				for (k in this.event){
+					this.notifyPath('event.'+k,this.event[k]);
+				}
+				if (notifyHidden){
+					this.notifyPath('event.reloadCount',this.event.reloadCount)
+				}
 			},
 			setStyles: function(){
 				this.customStyle['--text-primary-color']=this.event.colorSetToolbar.Text;
@@ -167,6 +166,8 @@
 				else if (target === 'to') {
 					this.event.timeTo=parsedMoment.toDate();
 				}
+				this.notifyPath('event.allowActions',this.event.allowActions);
+
 			},
 			setFormTimeFieldsFromEvent: function(){
 				var dateFormat = this.computeDateFormat(this.event.wholeday);
@@ -180,11 +181,20 @@
 				}
 			},
 			callSave: function(){
-				this.event.save();
+				this.event.save(this.saved, this);
+				this.notifyPath('event.allowActions',this.event.allowActions);
+			},
+			saved: function(){
+				this.notifyEventProps(true);				
 			},
 			callReload: function(){
-				this.event.load();
+				this.event.load(this.reloaded, this);
+				this.notifyPath('event.allowActions',this.event.allowActions);
 			},
+			reloaded: function(){
+				this.notifyEventProps(true);
+			},
+
 
 
 		});

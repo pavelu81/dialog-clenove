@@ -46,8 +46,8 @@
                         <div class="layout horizontal wrap">
                             <paper-checkbox checked="{{event.wholeday}}" style="margin-top: 32px; margin-right: 32px" class="" disabled="[[!event.allowActions.edit]]">Celodenní</paper-checkbox>
                             <div class="layout horizontal wrap">
-                                <paper-input id='inpTimeFrom' label="Od" value="{{timeFrom}}" type="{{dateType}}" style="" class="" disabled="[[!event.allowActions.edit]]"></paper-input>
-                                <paper-input id='inpTimeTo' label="Do" value="{{timeTo}}" type="{{dateType}}" style="" class="" disabled="[[!event.allowActions.edit]]"></paper-input>
+                                <paper-input id='inpTimeFrom' label="Od" value="{{timeFrom}}" type="{{dateType}}" style="" required auto-validate error-message="{{dateErrorMsg}}" pattern="{{dateRegEx}}" class="" disabled="[[!event.allowActions.edit]]"></paper-input>
+                                <paper-input id='inpTimeTo' label="Do" value="{{timeTo}}" type="{{dateType}}" style="" required auto-validate error-message="{{dateErrorMsg}}" pattern="{{dateRegEx}}" class="" disabled="[[!event.allowActions.edit]]"></paper-input>
                             </div>
                         </div>
                         <paper-textarea label="Popis" value="{{event.description}}" disabled="[[!event.allowActions.edit]]"></paper-textarea>
@@ -77,6 +77,14 @@
                     dateType: {
                         type: String,
                         computed: 'computeDateInputType(event.wholeday)'
+                    },
+                    dateRegEx: {
+                        type: String,
+                        computed: 'computeDateRegEx(event.wholeday)'
+                    },
+                    dateErrorMsg:{
+                        type: String,
+                        computed: 'computeDateErrorMsg(event.wholeday)'
                     },
                     timeFrom: {
                         type: String,
@@ -144,6 +152,17 @@
                 computeDateFormat: function (wholeday) {
                     return wholeday ? 'YYYY-MM-DD' : 'YYYY-MM-DDTHH:mm';
                 },
+                computeDateRegEx: function(wholeday){
+                    return wholeday ?
+                        '(?:19|20)[0-9]{2}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-9])|(?:(?!02)(?:0[1-9]|1[0-2])-(?:30))|(?:(?:0[13578]|1[02])-31))':
+                        '([0-2][0-9]{3})\-([0-1][0-9])\-([0-3][0-9])T([0-5][0-9])\:([0-5][0-9])';
+
+
+                },
+                computeDateErrorMsg: function (wholeday) {
+                    return wholeday ? 'Např. 2016-01-31' : 'Např. 2016-02-28T18:00';
+                },
+
                 timeFromChanged: function (newVal, oldVal) {
                     this.timeChanged('from', newVal, oldVal);
                 },
@@ -157,7 +176,7 @@
                     if (!this.event) {
                         return;
                     }
-                    var parsedMoment = moment(newVal, this.computeDateFormat(this.event.wholeday));
+                    var parsedMoment = moment(newVal, this.computeDateFormat(this.event.wholeday),true);
                     if (!parsedMoment.isValid()) {
                         return;
                     }

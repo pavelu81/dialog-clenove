@@ -62,7 +62,7 @@
     </template>
 
     <script>
-        /* globals ObjectObserver, moment */
+        /* globals moment */
         (function () {
             'use strict';
             Polymer({
@@ -113,7 +113,9 @@
                     this.hasEvent = (this.event !== null);
                 },
                 eventChanged: function (e) {
-                    if (!this.hasEvent) return;
+                    if (!this.hasEvent){
+                                return;
+                    }
                     if (e.path !== 'event.allowActions') {
                         this.notifyPath('event.allowActions', this.event.allowActions);
                     }
@@ -126,7 +128,7 @@
                         this.notifyPath('event.' + k, this.event[k]);
                     }
                     if (notifyHidden) {
-                        this.notifyPath('event.reloadCount', this.event.reloadCount)
+                        this.notifyPath('event.reloadCount', this.event.reloadCount);
                     }
                 },
                 setStyles: function () {

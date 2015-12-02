@@ -12,192 +12,193 @@
 <link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
 
 <dom-module id="puff-agenda-event-form">
-	<template>
-		<template is="dom-if" if="{{hasEvent}}">
-			<style>
-				:host {
-					display: block;
-					--paper-button-ink-color: var(--default-primary-color);	
-				}
-				paper-button.colorful {
-					color: var(--default-primary-color);
-				}
-				paper-button[disabled] {
-					background: transparent;
-					color: var(--disabled-text-color);
-				}
+    <template>
+        <template is="dom-if" if="{{hasEvent}}">
+            <style>
+                :host {
+                    display: block;
+                    --paper-button-ink-color: var(--default-primary-color);
+                }
 
-			</style>
+                paper-button.colorful {
+                    color: var(--default-primary-color);
+                }
 
-			<!--obsah-->
-			<paper-toolbar>
-				<iron-icon icon="event"></iron-icon>
-				<div class="title">{{event.summary}}</div>
-				<paper-icon-button icon="refresh" hidden="[[!event.allowActions.reload]]" on-tap="callReload"></paper-icon-button>
-				<paper-icon-button icon="check" hidden="[[!event.allowActions.save]]" on-tap="callSave"></paper-icon-button>
-			</paper-toolbar>
+                paper-button[disabled] {
+                    background: transparent;
+                    color: var(--disabled-text-color);
+                }
+            </style>
 
-			<div style="padding: 0 24px;">
-				<div class="layout horizontal">
-					<div class="flex">
-						<div>{{event.error}}</div>
-						<paper-input label="Název" value="{{event.summary}}" disabled="[[!event.allowActions.edit]]"></paper-input>
-						<div class="layout horizontal wrap">
-							<paper-checkbox checked="{{event.wholeday}}"  style="margin-top: 32px; margin-right: 32px" class="" disabled="[[!event.allowActions.edit]]">Celodenní</paper-checkbox>
-							<div class="layout horizontal wrap">
-								<paper-input id='inpTimeFrom' label="Od" value="{{timeFrom}}" type="{{dateType}}" style="" class="" disabled="[[!event.allowActions.edit]]"></paper-input>
-								<paper-input id='inpTimeTo' label="Do" value="{{timeTo}}" type="{{dateType}}" style="" class="" disabled="[[!event.allowActions.edit]]"></paper-input>
-							</div>
-						</div>
-						<paper-textarea label="Popis" value="{{event.description}}" disabled="[[!event.allowActions.edit]]"></paper-textarea>
-					</div>
-				</div>
-				<div>
-					<paper-button class="colorful" disabled="[[!event.allowActions.save]]" on-tap="callSave"><iron-icon icon="check"></iron-icon>Ulož</paper-button>
-					<paper-button on-tap="callReload" disabled="[[!event.allowActions.reload]]"><iron-icon icon="refresh"></iron-icon>Obnov</paper-button>
-				</div>
-			</div>
-		</template>
-	</template>
+            <!--obsah-->
+            <paper-toolbar>
+                <iron-icon icon="event"></iron-icon>
+                <div class="title">{{event.summary}}</div>
+                <paper-icon-button icon="refresh" hidden="[[!event.allowActions.reload]]" on-tap="callReload"></paper-icon-button>
+                <paper-icon-button icon="check" hidden="[[!event.allowActions.save]]" on-tap="callSave"></paper-icon-button>
+            </paper-toolbar>
 
-	<script>
-	/* globals ObjectObserver, moment */
-	(function () {
-		'use strict';
-		Polymer({
-			is: 'puff-agenda-event-form',
-			properties: {
-				event: {
-					type: Object,
-					notify: true,
-					reflectToAttribute: true,
-					observer: 'eventSet'
-				},
-				dateType: {
-					type: String,
-					computed: 'computeDateInputType(event.wholeday)'
-				},
-				timeFrom: {
-					type: String,
-					notify: false,
-					observer: 'timeFromChanged',
-				},
-				timeTo: {
-					type: String,
-					notify: false,
-					observer: 'timeToChanged',
-				},
-				hasEvent: {
-					type: Boolean,
-					notify: true,
-					readonly: true,
-					value: false
-				}
+            <div style="padding: 0 24px;">
+                <div class="layout horizontal">
+                    <div class="flex">
+                        <div>{{event.error}}</div>
+                        <paper-input label="Název" value="{{event.summary}}" disabled="[[!event.allowActions.edit]]"></paper-input>
+                        <div class="layout horizontal wrap">
+                            <paper-checkbox checked="{{event.wholeday}}" style="margin-top: 32px; margin-right: 32px" class="" disabled="[[!event.allowActions.edit]]">Celodenní</paper-checkbox>
+                            <div class="layout horizontal wrap">
+                                <paper-input id='inpTimeFrom' label="Od" value="{{timeFrom}}" type="{{dateType}}" style="" class="" disabled="[[!event.allowActions.edit]]"></paper-input>
+                                <paper-input id='inpTimeTo' label="Do" value="{{timeTo}}" type="{{dateType}}" style="" class="" disabled="[[!event.allowActions.edit]]"></paper-input>
+                            </div>
+                        </div>
+                        <paper-textarea label="Popis" value="{{event.description}}" disabled="[[!event.allowActions.edit]]"></paper-textarea>
+                    </div>
+                </div>
+                <div>
+                    <paper-button class="colorful" disabled="[[!event.allowActions.save]]" on-tap="callSave"><iron-icon icon="check"></iron-icon>Ulož</paper-button>
+                    <paper-button on-tap="callReload" disabled="[[!event.allowActions.reload]]"><iron-icon icon="refresh"></iron-icon>Obnov</paper-button>
+                </div>
+            </div>
+        </template>
+    </template>
 
-			},
-			observers: [
-				'eventChanged(event.*)'
-			],
-			ready: function() {
-			},
-			eventSet: function(){
-				if (this.event!==null){
-					/*
-					this.eventObserver = new ObjectObserver(this.event);
-					this.eventObserver.open(this.eventChanged,this);
-					*/
-					this.setStyles();
-					this.setFormTimeFieldsFromEvent();
-				}
-				this.hasEvent = (this.event!==null);
-			},
-			eventChanged: function(e){
-				if (!this.hasEvent) return;
-				if (e.path!=='event.allowActions'){
-					this.notifyPath('event.allowActions',this.event.allowActions);
-				}
-				this.setStyles();
-				this.setFormTimeFieldsFromEvent();
-			},
-			notifyEventProps: function(notifyHidden){
-				var k;
-				for (k in this.event){
-					this.notifyPath('event.'+k,this.event[k]);
-				}
-				if (notifyHidden){
-					this.notifyPath('event.reloadCount',this.event.reloadCount)
-				}
-			},
-			setStyles: function(){
-				this.customStyle['--text-primary-color']=this.event.colorSetToolbar.Text;
-				this.customStyle['--default-primary-color']=this.event.colorSetToolbar.Background;
+    <script>
+        /* globals ObjectObserver, moment */
+        (function () {
+            'use strict';
+            Polymer({
+                is: 'puff-agenda-event-form',
+                properties: {
+                    event: {
+                        type: Object,
+                        notify: true,
+                        reflectToAttribute: true,
+                        observer: 'eventSet'
+                    },
+                    dateType: {
+                        type: String,
+                        computed: 'computeDateInputType(event.wholeday)'
+                    },
+                    timeFrom: {
+                        type: String,
+                        notify: false,
+                        observer: 'timeFromChanged',
+                    },
+                    timeTo: {
+                        type: String,
+                        notify: false,
+                        observer: 'timeToChanged',
+                    },
+                    hasEvent: {
+                        type: Boolean,
+                        notify: true,
+                        readonly: true,
+                        value: false
+                    }
 
-				this.updateStyles();
-			},
-			computeDateInputType: function(wholeday){
-				//return '';
-				return wholeday?'date':'datetime-local';
-			},
-			computeDateFormat: function(wholeday){
-				return wholeday?'YYYY-MM-DD':'YYYY-MM-DDTHH:mm';
-			},
-			timeFromChanged: function(newVal,oldVal){
-				this.timeChanged('from',newVal,oldVal);
-			},
-			timeToChanged: function(newVal,oldVal){
-				this.timeChanged('to',newVal,oldVal);
-			},
-			timeChanged: function(target,newVal,oldVal){
-				if (newVal===oldVal){
-					return;
-				}
-				if (!this.event){
-					return;
-				}
-				var parsedMoment = moment(newVal,this.computeDateFormat(this.event.wholeday));
-				if (!parsedMoment.isValid()){
-					 return;
-				}
+                },
+                observers: [
+                    'eventChanged(event.*)'
+                ],
+                ready: function () {
+                },
+                eventSet: function () {
+                    if (this.event !== null) {
+                        /*
+                        this.eventObserver = new ObjectObserver(this.event);
+                        this.eventObserver.open(this.eventChanged,this);
+                        */
+                        this.setStyles();
+                        this.setFormTimeFieldsFromEvent();
+                    }
+                    this.hasEvent = (this.event !== null);
+                },
+                eventChanged: function (e) {
+                    if (!this.hasEvent) return;
+                    if (e.path !== 'event.allowActions') {
+                        this.notifyPath('event.allowActions', this.event.allowActions);
+                    }
+                    this.setStyles();
+                    this.setFormTimeFieldsFromEvent();
+                },
+                notifyEventProps: function (notifyHidden) {
+                    var k;
+                    for (k in this.event) {
+                        this.notifyPath('event.' + k, this.event[k]);
+                    }
+                    if (notifyHidden) {
+                        this.notifyPath('event.reloadCount', this.event.reloadCount)
+                    }
+                },
+                setStyles: function () {
+                    this.customStyle['--text-primary-color'] = this.event.colorSetToolbar.Text;
+                    this.customStyle['--default-primary-color'] = this.event.colorSetToolbar.Background;
 
-
-				if (target==='from'){
-					this.event.timeFrom=parsedMoment.toDate();
-				} 
-				else if (target === 'to') {
-					this.event.timeTo=parsedMoment.toDate();
-				}
-				this.notifyPath('event.allowActions',this.event.allowActions);
-
-			},
-			setFormTimeFieldsFromEvent: function(){
-				var dateFormat = this.computeDateFormat(this.event.wholeday);
-				var timeFromCandidate=moment(this.event.timeFrom).format(dateFormat);
-				var timeToCandidate=moment(this.event.timeTo).format(dateFormat);
-				if (timeFromCandidate!==this.timeFrom){
-					this.timeFrom=timeFromCandidate;
-				}
-				if (timeToCandidate!==this.timeTo){
-					this.timeTo=timeToCandidate;
-				}
-			},
-			callSave: function(){
-				this.event.save(this.saved, this);
-				this.notifyPath('event.allowActions',this.event.allowActions);
-			},
-			saved: function(){
-				this.notifyEventProps(true);				
-			},
-			callReload: function(){
-				this.event.load(this.reloaded, this);
-				this.notifyPath('event.allowActions',this.event.allowActions);
-			},
-			reloaded: function(){
-				this.notifyEventProps(true);
-			},
+                    this.updateStyles();
+                },
+                computeDateInputType: function (wholeday) {
+                    //return '';
+                    return wholeday ? 'date' : 'datetime-local';
+                },
+                computeDateFormat: function (wholeday) {
+                    return wholeday ? 'YYYY-MM-DD' : 'YYYY-MM-DDTHH:mm';
+                },
+                timeFromChanged: function (newVal, oldVal) {
+                    this.timeChanged('from', newVal, oldVal);
+                },
+                timeToChanged: function (newVal, oldVal) {
+                    this.timeChanged('to', newVal, oldVal);
+                },
+                timeChanged: function (target, newVal, oldVal) {
+                    if (newVal === oldVal) {
+                        return;
+                    }
+                    if (!this.event) {
+                        return;
+                    }
+                    var parsedMoment = moment(newVal, this.computeDateFormat(this.event.wholeday));
+                    if (!parsedMoment.isValid()) {
+                        return;
+                    }
 
 
+                    if (target === 'from') {
+                        this.event.timeFrom = parsedMoment.toDate();
+                    }
+                    else if (target === 'to') {
+                        this.event.timeTo = parsedMoment.toDate();
+                    }
+                    this.notifyPath('event.allowActions', this.event.allowActions);
 
-		});
-	})();
-	</script>
+                },
+                setFormTimeFieldsFromEvent: function () {
+                    var dateFormat = this.computeDateFormat(this.event.wholeday);
+                    var timeFromCandidate = moment(this.event.timeFrom).format(dateFormat);
+                    var timeToCandidate = moment(this.event.timeTo).format(dateFormat);
+                    if (timeFromCandidate !== this.timeFrom) {
+                        this.timeFrom = timeFromCandidate;
+                    }
+                    if (timeToCandidate !== this.timeTo) {
+                        this.timeTo = timeToCandidate;
+                    }
+                },
+                callSave: function () {
+                    this.event.save(this.saved, this);
+                    this.notifyPath('event.allowActions', this.event.allowActions);
+                },
+                saved: function () {
+                    this.notifyEventProps(true);
+                },
+                callReload: function () {
+                    this.event.load(this.reloaded, this);
+                    this.notifyPath('event.allowActions', this.event.allowActions);
+                },
+                reloaded: function () {
+                    this.notifyEventProps(true);
+                },
+
+
+
+            });
+        })();
+    </script>
 </dom-module>

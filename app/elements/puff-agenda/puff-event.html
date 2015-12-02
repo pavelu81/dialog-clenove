@@ -253,13 +253,13 @@ var PuffEvent = (function(){
               this.saveFulfilled.call(this,arguments);
               if (typeof callback==='function'){
                       callback.call(callbackContext,arguments);
-              };
+              }
             };
             var doneFnRejected=function(){
               this.saveRejected.call(this,arguments);
               if (typeof callback==='function'){
                       callback.call(callbackContext,arguments);
-              };
+              }
             };
 
             try{
@@ -289,13 +289,13 @@ var PuffEvent = (function(){
               this.loadFulfilled.call(this,arguments);
               if (typeof callback==='function'){
                       callback.call(callbackContext,arguments);
-              };
+              }
             };
             var doneFnRejected=function(){
               this.loadRejected.call(this,arguments);
               if (typeof callback==='function'){
                       callback.call(callbackContext,arguments);
-              };
+              }
             };
             try{
                 window.gapi.client.calendar.events.get({

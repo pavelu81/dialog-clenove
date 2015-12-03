@@ -20,7 +20,10 @@
 	<!-- endbuild -->
 
 	<!-- will be replaced with elements/elements.vulcanized.html -->
-	<link rel="import" href="elements/elements.html">
+	<!--<link rel="import" href="elements/elements.html">-->
+	<link rel="import" href="elements/puff-agenda/puff-calendar-controler.html">
+	<link rel="import" href="bower_components/google-calendar/google-calendar.html">
+
 	<!-- endreplace-->
 
 	<!-- For shared styles, shared-styles.html import in elements.html -->
@@ -32,9 +35,6 @@
 <template is="dom-bind" id="app">
 	<div>
 		<h1>TEST.HTML</h1>
-		<p>Tohle je testovací stránka</p>
-	</div>
-	<div>
 		<google-signin 
 		id="gsignin"
 		client-id="901475235015-9gp0m5tr7qj41gmtf9f9ebarj6cvkc42.apps.googleusercontent.com"
@@ -43,17 +43,72 @@
 		hosted-domain="dsdialog.org"
 		>
 		</google-signin>
+		<hr/>
 	</div>
-	<puff-calendar-controler id="calCtrl" calendars='["pavelu81@gmail.com","dsdialog@gmail.com"]'></puff-calendar-controler>
+	<puff-calendar-controler id="calCtrl" calendars='[
+		"pavelu81@gmail.com"
+		]'></puff-calendar-controler>
 </template>
 
-<!-- build:js scripts/app.js -->
-<script src="scripts/app.js"></script>
 <script>
+(function(document) {
+  'use strict';
+  var app = document.querySelector('#app');
+  
+  app.addEventListener('dom-change', function() {
+	
+	//nastavení kalendářů
+	var calendars = [];
+	calendars.push('pavelu81@gmail.com'); //můj osobní
 
+	calendars.push('ghmbk1e6gfe5cpudpgop8nu6t8@group.calendar.google.com'); //obecné DIALOG
+	calendars.push('dsdialog.org_hgp12kdgv6dpdo5a011ip0p7v4@group.calendar.google.com'); //OMLUVENKY
+	calendars.push('dsdialog.org_lt66tnmobj380edrpq9t671ols@group.calendar.google.com'); //predbezne terminy DIALOG
+
+	calendars.push('dsdialog@gmail.com'); //vlaky
+	calendars.push('rasfhq8guscc0foijv68bmpnq4@group.calendar.google.com'); //kanape
+	calendars.push('ccro35on02gol2plnokr45ocns@group.calendar.google.com'); //herkules
+	calendars.push('kp17fro0t0su28kodt2l565u90@group.calendar.google.com'); //kluk
+	calendars.push('6m6lv5kuctdjg1qtri8re3tj8o@group.calendar.google.com'); //joe
+	calendars.push('aca8jhr6vj39oo6i8t4q7u5j34@group.calendar.google.com'); //kocky
+	
+	calendars.push('cs.czech#holiday@group.v.calendar.google.com'); //svatky
+
+
+	var calendarTypeRules=[];
+	calendarTypeRules.push({
+		type: 'Omluvenky',
+		calProp: 'id',
+		regex: 'dsdialog.org_hgp12kdgv6dpdo5a011ip0p7v4@group\.calendar\.google\.com'
+	});
+	calendarTypeRules.push({
+		type: 'Ferman',
+		calProp: 'id',
+		regex: '.*@group\.calendar\.google\.com'
+	});
+   	calendarTypeRules.push({
+		type: 'Ferman',
+		calProp: 'id',
+		regex: 'dsdialog@gmail\.com'
+	});
+   	calendarTypeRules.push({
+		type: 'Osobní',
+		calProp: 'id',
+		regex: '.*@gmail\.com'
+	});
+   	calendarTypeRules.push({
+		type: 'HOLIDAY',
+		calProp: 'id',
+		regex: '.*#holiday@group\.v\.calendar\.google\.com'
+	});
+
+    app.$.calCtrl.calendars=calendars;
+    app.$.calCtrl.calendarTypeRules=calendarTypeRules;
+  });
+
+
+
+})(document);
 </script>
-<!--<script src="scripts/signin.js"></script>-->
-<!-- endbuild-->
-
 </body>
 </html>

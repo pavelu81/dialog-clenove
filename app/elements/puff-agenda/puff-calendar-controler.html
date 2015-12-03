@@ -10,13 +10,21 @@
 		</google-signin-aware>
 		<h1>puff-calendar-controler</h1>
 		<h2>calendar-types</h2>
+			<ul>
+			<template is="dom-repeat" items="{{calendarTypes}}" as="calType">
+				<li>
+					<div>{{calType}}</div>
+				</li>
+			</template>
+			</ul>
 		<h2>calendars</h2>
 			<ul>
 			<template is="dom-repeat" items="{{calendars}}" as="calendar">
 				<li>
-					<div>{{calendar.id}}</div>
-					<div>{{calendar.summary}}</div>
+					<div><b>{{calendar.id}}</b></div>
+					<div>{{calendar.title}}</div>
 					<div>{{calendar.description}}</div>
+					<div>{{calendar.calendarType}}</div>
 				</li>
 			</template>
 			</ul>
@@ -29,12 +37,19 @@
 		
 		//PROPERTIES
 		properties: {
+			//pole pravidel pro určení typu kalendáře
+			calendarTypeRules: {
+				type: Array,
+				observer: '_autoLoad'
+			},
 			calendarTypes: {
 				type: Array,
+				computed: '_computeCalTypes(calendars.*)'
 			},
 			calendars: {
 				type: Array,
-				value: []
+				value: [],
+				observer: '_autoLoad'
 			},
 			events: {
 				type: Array,
@@ -88,20 +103,49 @@
 			}
 		},
 		_reloadCalInfo: function(calendar){
-			console.log('calendar-controler %s is reloading %o',this.id, calendar);
-			var calId = (typeof calendar === Object)? calendar.id : calendar;
+			var calId = (typeof calendar === 'object')? calendar.id : calendar;
+			console.log('calendar-controler %s is loading calInfo for %s',this.id, calId);
 			this.$.calAPI.api.calendarList
 				.get({calendarId: calId})
 				.then(
-					function(resp){return this._calInfo(calendar,resp);},
+					function(resp){return this._gotCalInfo(calendar,resp);},
 					null,
 					this);
 			return;
 		},
-		_calInfo: function(calendar, response){
-			console.log(calendar,response);
+		_gotCalInfo: function(calendar, response){
+			var calResource = response.result;
+			console.log('calendar-controler %s got info about calendar %s: %o',this.id, calResource.id, calResource);
 			var index = this.calendars.indexOf(calendar);
-			this.set('calendars.'+index,response.result);
+			var calResource = response.result;
+			calResource.title = calResource.summaryOverride ? calResource.summaryOverride : calResource.summary;
+			calResource.calendarType = this._resolveCalType(calResource);
+			this.set('calendars.'+index,calResource);
+		},
+		_resolveCalType(calInfo){
+			var i;
+			for (i=0;i<this.calendarTypeRules.length;i++){
+				var rule = this.calendarTypeRules[i];
+				if (calInfo[rule.calProp].match(rule.regex)){
+					return rule.type;
+				}
+			}
+			return "GENERAL";
+		},
+		//COMPUTED PROPERTIES
+		_computeCalTypes(calendars){
+			console.log('calendar-controler %s si computing list of calendar types',this.id);
+			var calTypes = [];
+			var calTypesObj = {};
+			var i;
+			var calType;
+			for (i=0;i<calendars.base.length;i++){
+				calTypesObj[calendars.base[i].calendarType]=1;
+			}
+			for (calType in calTypesObj){
+				calTypes.push(calType);
+			}
+			return calTypes;
 		},
 	});
 	</script>

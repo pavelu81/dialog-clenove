@@ -1,0 +1,156 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/google-signin/google-signin.html">
+<link rel="import" href="../../bower_components/google-apis/google-apis.html">
+
+<dom-module id="puff-calendar-controler">
+	<template>
+		<google-client-loader id="calAPI" name="calendar" version="v3"></google-client-loader>
+		<google-signin-aware id="calSigninAware"
+		  scopes="https://www.googleapis.com/auth/calendar">
+		</google-signin-aware>
+		<h1>puff-calendar-controler</h1>
+		<h2>calendar-types</h2>
+		<h2>calendars</h2>
+			<ul>
+			<template is="dom-repeat" items="{{calendars}}" as="calendar">
+				<li>
+					<div>{{calendar.id}}</div>
+					<div>{{calendar.summary}}</div>
+					<div>{{calendar.description}}</div>
+				</li>
+			</template>
+			</ul>
+		<h2>events</h2>
+	</template>
+	<script>
+	'use strict';
+	Polymer({
+		is: 'puff-calendar-controler',
+		
+		//PROPERTIES
+		properties: {
+			calendarTypes: {
+				type: Array,
+			},
+			calendars: {
+				type: Array,
+				value: []
+			},
+			events: {
+				type: Array,
+			},
+			autoLoad: {
+				value: true,
+			},
+		},
+		//LIFECYCLE
+		ready: function(){
+			var _this = this;
+			this.$.calAPI.addEventListener('google-api-load', function(e){return _this._apiLoadedHandler(e);});
+			this.$.calSigninAware.addEventListener('google-signin-aware-success',function(e){return _this._signedInHandler(e);});
+			this.$.calSigninAware.addEventListener('google-signin-aware-failure',function(e){return _this._signedOutHandler(e);});
+			this.$.calSigninAware.addEventListener('google-signin-aware-signed-out',function(e){return _this._signedOutHandler(e);});
+		},
+		//CONTROLER STATE
+		_apiLoaded: false,
+		_apiLoadedHandler: function(){
+			console.log('calendar-controler %s has loaded API successfully.',this.id);
+			this._apiLoaded = true;
+			this._autoLoad();
+		},
+		_signedIn: false,
+		_signedInHandler: function(){
+			console.log('calendar-controler %s has signed user.',this.id);
+			this._signedIn = true;
+			this._autoLoad();
+		},
+		_signedOutHandler: function(){
+			console.log('calendar-controler %s is signed out.',this.id);
+			this._signedIn = false;
+		},
+		_readyToUse: function(){
+			return this._signedIn && this._apiLoaded;
+		},
+		//LOADING
+		_autoLoad: function(){
+			if (this.autoLoad && this._readyToUse()){
+				this._reload();
+			}
+		},
+		_reload: function(){
+			this._reloadCalendars();
+		},
+		_reloadCalendars: function(){
+			console.log('calendar-controler %s is reloading calendars...',this.id );
+			var i;
+			for (i=0; i<this.calendars.length;i++){
+				this._reloadCalInfo(this.calendars[i]);
+			}
+		},
+		_reloadCalInfo: function(calendar){
+			console.log('calendar-controler %s is reloading %o',this.id, calendar);
+			var calId = (typeof calendar === Object)? calendar.id : calendar;
+			this.$.calAPI.api.calendarList
+				.get({calendarId: calId})
+				.then(
+					function(resp){return this._calInfo(calendar,resp);},
+					null,
+					this);
+			return;
+		},
+		_calInfo: function(calendar, response){
+			console.log(calendar,response);
+			var index = this.calendars.indexOf(calendar);
+			this.set('calendars.'+index,response.result);
+		},
+	});
+	</script>
+<!--
+	<script>
+	/* exported PuffCalendar */
+	var PuffCalendar = (function(){
+		function PuffCalendar(){
+		//PROPERTIES START
+		Object.defineProperties(this,{
+		});
+		//PROPERTIES END
+
+		//FUNCTIONS START
+		//	this.metoda=function(){}
+		//FUNCTIONS END
+		}
+
+		//STATICKE - START
+		//if (typeof PuffEvent.instances === 'undefined'){
+		//	PuffEvent.instances = {};
+		//}
+		//STATICKE - END
+		
+		return PuffCalendar;
+	}());
+	</script>
+	<script>
+	/* exported PuffCalendarEvent */
+	var PuffCalendarEvent = (function(){
+		function PuffCalendarEvent(){
+		//PROPERTIES START
+		Object.defineProperties(this,{
+		});
+		//PROPERTIES END
+
+		//FUNCTIONS START
+		//	this.metoda=function(){}
+		//FUNCTIONS END
+		}
+
+		//STATICKE - START
+		//if (typeof PuffEvent.instances === 'undefined'){
+		//	PuffEvent.instances = {};
+		//}
+		//STATICKE - END
+		
+		return PuffCalendarEvent;
+	}());
+	</script>
+-->
+</dom-module>

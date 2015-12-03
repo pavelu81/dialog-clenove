@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="Ferman Divadelního spolku DIALOG">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="generator" content="Polymer Starter Kit" />
+	<title>Test</title>
+
+	<!-- Web Application Manifest -->
+	<link rel="manifest" href="manifest.json">
+
+	<!-- build:css styles/main.css -->
+	<link rel="stylesheet" href="styles/main.css">
+	<!-- endbuild-->
+
+	<!-- build:js bower_components/webcomponentsjs/webcomponents-lite.min.js -->
+	<script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+	<!-- endbuild -->
+
+	<!-- will be replaced with elements/elements.vulcanized.html -->
+	<link rel="import" href="elements/elements.html">
+	<!-- endreplace-->
+
+	<!-- For shared styles, shared-styles.html import in elements.html -->
+	<style is="custom-style" include="shared-styles"></style>
+</head>
+
+<body unresolved class="fullbleed layout vertical">
+<span id="browser-sync-binding"></span>
+<template is="dom-bind" id="app">
+	<div>
+		<h1>TEST.HTML</h1>
+		<p>Tohle je testovací stránka</p>
+	</div>
+	<div>
+		<google-signin 
+		id="gsignin"
+		client-id="901475235015-9gp0m5tr7qj41gmtf9f9ebarj6cvkc42.apps.googleusercontent.com"
+		label-signin="Přihlásit"
+		label-signout="Odhlásit"
+		hosted-domain="dsdialog.org"
+		>
+		</google-signin>
+	</div>
+	<puff-calendar-controler id="calCtrl" calendars='["pavelu81@gmail.com","dsdialog@gmail.com"]'></puff-calendar-controler>
+</template>
+
+<!-- build:js scripts/app.js -->
+<script src="scripts/app.js"></script>
+<script>
+
+</script>
+<!--<script src="scripts/signin.js"></script>-->
+<!-- endbuild-->
+
+</body>
+</html>

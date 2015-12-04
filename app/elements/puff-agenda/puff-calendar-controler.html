@@ -117,12 +117,11 @@
 			var calResource = response.result;
 			console.log('calendar-controler %s got info about calendar %s: %o',this.id, calResource.id, calResource);
 			var index = this.calendars.indexOf(calendar);
-			var calResource = response.result;
 			calResource.title = calResource.summaryOverride ? calResource.summaryOverride : calResource.summary;
 			calResource.calendarType = this._resolveCalType(calResource);
 			this.set('calendars.'+index,calResource);
 		},
-		_resolveCalType(calInfo){
+		_resolveCalType: function(calInfo){
 			var i;
 			for (i=0;i<this.calendarTypeRules.length;i++){
 				var rule = this.calendarTypeRules[i];
@@ -130,10 +129,10 @@
 					return rule.type;
 				}
 			}
-			return "GENERAL";
+			return 'GENERAL';
 		},
 		//COMPUTED PROPERTIES
-		_computeCalTypes(calendars){
+		_computeCalTypes: function(calendars){
 			console.log('calendar-controler %s si computing list of calendar types',this.id);
 			var calTypes = [];
 			var calTypesObj = {};

@@ -3,35 +3,6 @@
 'use strict';
 var PuffColorDir = (function(){
     function PuffColorDir(){
-        
-        //postupné přiřazování barev
-        this.nextColorIndex = 0;
-        this.getNewColor=function(){
-            var color = PuffColorDir.AvailableColors[this.nextColorIndex];
-            this.nextColorIndex=(this.nextColorIndex+4)%PuffColorDir.AvailableColors.length;
-            return color;
-        };
-
-        //slovník barev pro zdroje
-        this.colorDict = {};
-        this.setColorForResource=function(resource,color){
-            this.colorDict[resource]=color;
-        };
-        this.getColorForResource=function(resource, generateNew){
-            generateNew = generateNew || false;
-            var color = this.colorDict[resource];
-            if (color===undefined && generateNew){
-                color = this.getNewColor();
-                this.setColorForResource(resource,color);
-            }
-            return color;
-        };
-        this.getColorSetForResource=function(resource, shade, generateNew){
-            return PuffColorDir.GetColorSet(this.getColorForResource(resource,generateNew),shade);
-        };
-        
-        
-
         //staticka metoda vracejici sadu barev podle odstinu
         if (typeof PuffColorDir.GetColorSet === 'undefined'){
             PuffColorDir.GetColorSet = function (color, shade){
@@ -106,6 +77,48 @@ var PuffColorDir = (function(){
                 },
             };
         }
+
+        //postupné přiřazování barev
+        //this.nextColorIndex = 0;
+        this.getNewColor=function(){
+			/*var color = PuffColorDir.AvailableColors[this.nextColorIndex];
+            this.nextColorIndex=(this.nextColorIndex+4)%PuffColorDir.AvailableColors.length;
+            return color;*/
+            var i;
+            var color=PuffColorDir.AvailableColors[0];
+            for (i=1;i<PuffColorDir.AvailableColors.length;i++){
+                    var colorCandidate = PuffColorDir.AvailableColors[i];
+                    if (this.colorCounter[color]>this.colorCounter[colorCandidate]){
+                            color = colorCandidate;
+                    }
+            }
+            return color;
+        };
+
+        //slovník barev pro zdroje
+        this.colorDict = {};
+        this.colorCounter = {};
+        var i;
+        for (i=0;i<PuffColorDir.AvailableColors.length;i++){
+                this.colorCounter[PuffColorDir.AvailableColors[i]]=0;
+        }
+        this.setColorForResource=function(resource,color){
+            this.colorDict[resource]=color;
+            this.colorCounter[color]++;
+        };
+        this.getColorForResource=function(resource, generateNew){
+            generateNew = generateNew || false;
+            var color = this.colorDict[resource];
+            if (color===undefined && generateNew){
+                color = this.getNewColor();
+                this.setColorForResource(resource,color);
+            }
+            return color;
+        };
+        this.getColorSetForResource=function(resource, shade, generateNew){
+            return PuffColorDir.GetColorSet(this.getColorForResource(resource,generateNew),shade);
+        };
+
     }
     return PuffColorDir;
 }());

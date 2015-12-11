@@ -1,0 +1,165 @@
+﻿	<script>
+	/* global moment */ //pro JSHint
+	/* exported PuffCalendarEvent */
+	var PuffCalendarEvent = (function(){
+		function PuffCalendarEvent(calendar,googleEventResource){
+			//PROPERTIES START
+			Object.defineProperties(this,{
+				event: {
+					value: googleEventResource,
+					enumerable: false,
+					writable: true,
+				},
+				calendar: {
+					value: calendar,
+					enumerable: true,
+					writable: false
+				},
+				id: {
+					enumerable: true,
+					get: function(){return this.event.id;}
+				},
+				summary: {
+					enumerable:true,
+					get: function(){
+							return this.event.summary;
+						},
+					set: function(value){
+							this.event.summary=value;
+							this.setDirty();
+						}
+					},
+				description: {
+						enumerable: true,
+						get: function(){
+							return this.event.description;
+						},
+						set: function(value){
+							this.event.description=value;
+							this.setDirty();
+						}
+					},
+				wholeday: {
+					enumerable: true,
+					get: function(){return this.event.start.date?true:false;},
+					set: function(value){
+						if (this.wholeday !== value){
+							//zapamatujeme původní interval
+							var origFrom = this.timeFrom;
+							var origTo = this.timeTo;
+							//přehodíme vlastnosti objektů start a end na správné
+							switch(value){
+								case true:
+									delete this.event.start.dateTime;
+									this.event.start.date='.';
+									delete this.event.end.dateTime;
+									this.event.end.date='.';
+									break;
+								case false:
+									delete this.event.start.date;
+									this.event.start.dateTime=new Date();
+									delete this.event.end.date;
+									this.event.end.dateTime=new Date();
+									break;
+								default:
+									return;
+							}
+							//zapíšeme původní rozsah
+							this.timeFrom = origFrom;
+							this.timeTo = origTo;
+						}
+					}
+				},
+				timeFrom: {
+					enumerable: true,
+					get: function(){
+						return this.wholeday?
+							moment(this.event.start.date).toDate():
+							moment(this.event.start.dateTime).toDate();
+					},
+					set: function(value){
+						var candidate;
+						if (this.wholeday){
+							candidate = moment(value).format('YYYY-MM-DD');
+							if(this.event.start.date!==candidate){
+								this.event.start.date=candidate;
+								this.setDirty();
+							}
+						} 
+						else {
+							candidate = moment(value).format('YYYY-MM-DDTHH:mm:ssZ');
+							if(this.event.start.dateTime!==candidate){
+								this.event.start.dateTime=candidate;
+								this.setDirty();
+							}
+						}
+					}
+				},
+				timeTo: {
+					enumerable: true,
+					get: function(){
+						return this.wholeday?
+							moment(this.event.end.date).add(-1,'ms').toDate():
+							moment(this.event.end.dateTime).toDate();
+					},
+					set: function(value){
+						var candidate;
+						if (this.wholeday){
+							candidate = moment(value).add(1,'days').format('YYYY-MM-DD');
+							if(this.event.end.date!==candidate){
+								this.event.end.date=candidate;
+								this.setDirty();
+							}
+						} 
+						else {
+							candidate = moment(value).format('YYYY-MM-DDTHH:mm:ssZ');
+							if(this.event.end.dateTime!==candidate){
+								this.event.end.dateTime=candidate;
+								this.setDirty();
+							}
+						}
+					}
+
+				},
+			});
+			//PROPERTIES END
+
+			//FUNCTIONS START
+			//	this.metoda=function(){}
+			//FUNCTIONS END
+			
+			//OBSERVER PATTERN START
+			this.handlers = [];
+			this.subscribe = function(fn, thisObj){
+				var scope = thisObj || window;
+				this.handlers.push({fn: fn, scope: scope});
+				return this;
+			};
+			this.unsubscribe = function(fn,thisObj){
+				var scope = thisObj || window;
+				this.handlers = this.handlers.filter(
+					function (item) {
+						if (item.fn !== fn || item.scope !== scope){
+							return item;
+						}
+					}
+				);
+				return this;
+			};
+			this.fire = function(parametr) {
+				this.handlers.forEach(function(item){
+					item.fn.call(item.scope, parametr);
+				});
+			};
+			//OBSERVER PATTERN END
+		}
+
+		//STATICKE - START
+		//if (typeof PuffEvent.instances === 'undefined'){
+		//	PuffEvent.instances = {};
+		//}
+		//STATICKE - END
+		
+		return PuffCalendarEvent;
+	}());
+	</script>

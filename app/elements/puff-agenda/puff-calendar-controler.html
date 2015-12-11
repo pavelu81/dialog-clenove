@@ -1,6 +1,12 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/google-signin/google-signin.html">
 <link rel="import" href="../../bower_components/google-apis/google-apis.html">
+<link rel="import" href="puff-color-dir.html">
+<link rel="import" href="puff-calendar-event.html">
+
+
+<script src='../../bower_components/moment/min/moment-with-locales.min.js'></script>
+
 
 <dom-module id="puff-calendar-controler">
 	<template>
@@ -29,36 +35,72 @@
 			</template>
 			</ul>
 		<h2>events</h2>
+			<ul>
+			<template is="dom-repeat" items="{{events}}" as="event">
+				<li>
+					<div><b>{{event.summary}}</b></div>
+					<div>{{event.calendar.title}}</div>
+				</li>
+			</template>
+			</ul>
 	</template>
 	<script>
+	/* global moment, PuffColorDir, PuffCalendarEvent */ //pro JSHint
 	'use strict';
 	Polymer({
 		is: 'puff-calendar-controler',
 		
 		//PROPERTIES
 		properties: {
+			//čas od kdy jsou načítány eventy (moment)
+			momentFrom: {
+				type: Date,
+				notify: true,
+				reflectToAttribute: true,
+				value: moment().isoWeekday(1).startOf('day')
+			},
+			//čas do kdy jsou načítány eventy
+			momentTo: {
+				type: Date,
+				notify: true,
+				reflectToAttribute: true,
+				value: moment().add({weeks: 5}).isoWeekday(7).endOf('day')
+			},
 			//pole pravidel pro určení typu kalendáře
 			calendarTypeRules: {
 				type: Array,
 				observer: '_autoLoad'
 			},
+			//vyskytující se typy kalendářů
 			calendarTypes: {
 				type: Array,
 				computed: '_computeCalTypes(calendars.*)'
 			},
+			//kalendáře - pole objektů, je ale možno, že dočasně (před načtením) obsahuje pouze string ID
 			calendars: {
 				type: Array,
 				value: [],
 				observer: '_autoLoad'
 			},
+			//události v kalendářích
 			events: {
 				type: Array,
+				value: []
 			},
+			//příznak, zda se má automaticky načítat
 			autoLoad: {
 				value: true,
 			},
 		},
+
+		//HELPERY
+		colorDir: new PuffColorDir(),
+
+		
 		//LIFECYCLE
+		/* provádí se poté, co je v pořádku inicializovaný element ve stránce
+		 * spouštím eventhandlery na přihlašování...
+		 */
 		ready: function(){
 			var _this = this;
 			this.$.calAPI.addEventListener('google-api-load', function(e){return _this._apiLoadedHandler(e);});
@@ -67,34 +109,43 @@
 			this.$.calSigninAware.addEventListener('google-signin-aware-signed-out',function(e){return _this._signedOutHandler(e);});
 		},
 		//CONTROLER STATE
+		/* příznak, zda je nahráno API */
 		_apiLoaded: false,
+		/* handler volaný po úspěšné inicializaci API */
 		_apiLoadedHandler: function(){
 			console.log('calendar-controler %s has loaded API successfully.',this.id);
 			this._apiLoaded = true;
 			this._autoLoad();
 		},
+		/* příznak, zda je uživatel v pořádku přihlášen */
 		_signedIn: false,
+		/* handler volaný při úspěšném přihlášení */
 		_signedInHandler: function(){
 			console.log('calendar-controler %s has signed user.',this.id);
 			this._signedIn = true;
 			this._autoLoad();
 		},
+		/* handler volaný při odhlášení uživatele */
 		_signedOutHandler: function(){
 			console.log('calendar-controler %s is signed out.',this.id);
 			this._signedIn = false;
 		},
+		/* je vše připraveno pro komunikaci s kalendářem? tedy jestli je přihlášen uživatel a jestli je nahráno API */
 		_readyToUse: function(){
 			return this._signedIn && this._apiLoaded;
 		},
 		//LOADING
+		/* provede reload, pokud je nastaven autoload a vše připraveno k použití */
 		_autoLoad: function(){
 			if (this.autoLoad && this._readyToUse()){
 				this._reload();
 			}
 		},
+		/* provede reload všeho */
 		_reload: function(){
 			this._reloadCalendars();
 		},
+		/* provede reload info o kalendářích */
 		_reloadCalendars: function(){
 			console.log('calendar-controler %s is reloading calendars...',this.id );
 			var i;
@@ -102,6 +153,7 @@
 				this._reloadCalInfo(this.calendars[i]);
 			}
 		},
+		/* zavolá reload infa o kalendáři (parametrem je bud objekt kalendáře nebo id kalendáře) */
 		_reloadCalInfo: function(calendar){
 			var calId = (typeof calendar === 'object')? calendar.id : calendar;
 			console.log('calendar-controler %s is loading calInfo for %s',this.id, calId);
@@ -113,6 +165,7 @@
 					this);
 			return;
 		},
+		/* obdrženo info o kalendáři */
 		_gotCalInfo: function(calendar, response){
 			var calResource = response.result;
 			console.log('calendar-controler %s got info about calendar %s: %o',this.id, calResource.id, calResource);
@@ -120,7 +173,11 @@
 			calResource.title = calResource.summaryOverride ? calResource.summaryOverride : calResource.summary;
 			calResource.calendarType = this._resolveCalType(calResource);
 			this.set('calendars.'+index,calResource);
+			if (this.autoLoad){
+				this._reloadEvents(calResource);
+			}
 		},
+		/* podle nastavených pravidel provádí nastavení typu kalendáře */
 		_resolveCalType: function(calInfo){
 			var i;
 			for (i=0;i<this.calendarTypeRules.length;i++){
@@ -131,7 +188,48 @@
 			}
 			return 'GENERAL';
 		},
+		_reloadEvents: function(calendar){
+			console.log('calendar-controler %s is asking google for events in calendar %s',this.id, calendar.title);
+			this.$.calAPI.api.events
+				.list({
+					calendarId: calendar.id,
+					singleEvents: true,
+					timeMax: this.momentTo.toJSON(),
+					timeMin: this.momentFrom.toJSON(),
+				})
+				.then(
+					function(resp){return this._gotEvents(calendar,resp, true);},
+					null,
+					this);
+			return;
+	
+		},
+		_gotEvents: function(calendar, response, removeOld){
+			var googleEventResources = response.result.items;
+			console.log('calendar-controler %s got events from %s: %o',this.id, calendar.title, googleEventResources);
+			if (removeOld){
+				this._removeEvents(calendar);
+			}
+			var i;
+			for (i=0;i<googleEventResources.length;i++){
+				this.push('events', new PuffCalendarEvent(calendar,googleEventResources[i]));
+			}
+		},
+		/* odstrani eventy patřící kalendáři */
+		_removeEvents: function(calendar){
+			console.log('calendar-controler %s is removing old events from %s',this.id, calendar.title);
+			var i, length;
+			length=this.events.length;
+			for (i=0;i<length;i++){
+				if (this.events[i].calendar === calendar){
+					this.arrayDelete('events',this.events[i]);
+					//this.splice('events',i,1);
+					//length--;
+				}
+			}
+		},
 		//COMPUTED PROPERTIES
+		/* seznam vyskytnuvších se typů kalendáře */
 		_computeCalTypes: function(calendars){
 			console.log('calendar-controler %s si computing list of calendar types',this.id);
 			var calTypes = [];
@@ -170,29 +268,6 @@
 		//STATICKE - END
 		
 		return PuffCalendar;
-	}());
-	</script>
-	<script>
-	/* exported PuffCalendarEvent */
-	var PuffCalendarEvent = (function(){
-		function PuffCalendarEvent(){
-		//PROPERTIES START
-		Object.defineProperties(this,{
-		});
-		//PROPERTIES END
-
-		//FUNCTIONS START
-		//	this.metoda=function(){}
-		//FUNCTIONS END
-		}
-
-		//STATICKE - START
-		//if (typeof PuffEvent.instances === 'undefined'){
-		//	PuffEvent.instances = {};
-		//}
-		//STATICKE - END
-		
-		return PuffCalendarEvent;
 	}());
 	</script>
 -->

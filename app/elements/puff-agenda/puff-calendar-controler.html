@@ -64,28 +64,33 @@
 				type: Date,
 				notify: true,
 				reflectToAttribute: true,
-				value: moment().add({weeks: 5}).isoWeekday(7).endOf('day')
+				value: moment().add({weeks: 4}).isoWeekday(7).endOf('day')
 			},
 			//pole pravidel pro určení typu kalendáře
 			calendarTypeRules: {
 				type: Array,
+				value: [],
 				observer: '_autoLoad'
 			},
 			//vyskytující se typy kalendářů
 			calendarTypes: {
 				type: Array,
+				notify: true,
+				reflectToAttribute: true,
 				computed: '_computeCalTypes(calendars.*)'
 			},
 			//kalendáře - pole objektů, je ale možno, že dočasně (před načtením) obsahuje pouze string ID
 			calendars: {
 				type: Array,
 				value: [],
+				reflectToAttribute: true,
 				observer: '_autoLoad'
 			},
 			//události v kalendářích
 			events: {
 				type: Array,
-				value: []
+				value: [],
+				notify: true,
 			},
 			//příznak, zda se má automaticky načítat
 			autoLoad: {

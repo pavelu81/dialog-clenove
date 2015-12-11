@@ -1,9 +1,8 @@
+<script src='../../bower_components/moment/min/moment-with-locales.min.js'></script>
+
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
-<script src='../../bower_components/moment/min/moment-with-locales.min.js'></script>
-<link rel="import" href="../../bower_components/observe-js/observe-js.html">
-<link rel="import" href="../../bower_components/google-signin/google-signin.html">
-<link rel="import" href="../../bower_components/google-apis/google-apis.html">
+
 <link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
@@ -12,17 +11,11 @@
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="puff-agenda-event.html">
 <link rel="import" href="puff-agenda-event-form.html">
-<link rel="import" href="puff-event.html">
 
 
 <dom-module id="puff-agenda">
 	<paper-styles/>
-	<template if="{{signedIn}}">
-		<google-client-loader id="calAPI" name="calendar" version="v3">
-		</google-client-loader>
-		<google-signin-aware id="calSigninAware"
-		  scopes="https://www.googleapis.com/auth/calendar">
-		</google-signin-aware>
+	<template>
 		<style>
 		  :host {
 			display: block;
@@ -95,14 +88,6 @@
 		<paper-dialog id="eventDialog" modal="true">
 			<puff-agenda-event-form id="eventForm" event="{{selectedEvent}}"></puff-agenda-event-form>
 		</paper-dialog>
-		<!--
-		<template is="dom-repeat" items="{{events}}" as="event">
-			<puff-agenda-event event="{{event}}" date="{{date.date}}" on-puff-event-tap="eventTap"></puff-agenda-event>
-			<div>{{event.event.summary}}</div>
-			<div>{{event.event.id}}</div>
-			<hr/>
-		</template>
-		-->
 		<template is="dom-repeat" items="{{weeks}}" as="week">
 			<paper-material class="puff-agenda-week">
 				<paper-toolbar><iron-icon icon="event"></iron-icon><span class="title">{{week.title}}</span></paper-toolbar>
@@ -120,6 +105,7 @@
 										<template is="dom-repeat" 
 											items="{{events}}" as="event"
 											filter="{{filterForCalendarTypeAndDate(calendarType,date.date)}}" observe="reloadCount">
+											<div>{{event.summary}}</div>
 											<puff-agenda-event event="{{event}}" date="{{date.date}}" on-puff-event-tap="eventTap"></puff-agenda-event>
 										</template>
 									</div>
@@ -136,20 +122,16 @@
 	(function () {
 		'use strict';
 		//console.log('### puff-agenda');
-		moment.locale('cs',{
-			monthsShort: 'Led_Úno_Bře_Dub_Kvě_Čer_Čvc_Srp_Zář_Říj_Lis_Pro'.split('_'),
-
-		});
 		Polymer({
 			is: 'puff-agenda',
 			properties: {
-				dateFrom: {
+				momentFrom: {
 					type: Date,
 					notify: true,
 					reflectToAttribute: true,
 					value: moment().isoWeekday(1)
 				},
-				dateTo: {
+				momentTo: {
 					type: Date,
 					notify: true,
 					reflectToAttribute: true,
@@ -160,14 +142,14 @@
 					notify: true,
 					readonly: true,
 					value: [],
-					computed: '_computeWeeks(dateFrom,dateTo)'
+					computed: '_computeWeeks(momentFrom,momentTo)'
 				},
 				days: {
 					type: Array,
 					notify: true,
 					readonly: true,
 					value: [],
-					computed: '_computeDays(dateFrom,dateTo)'
+					computed: '_computeDays(momentFrom,momentTo)'
 				},
 				events: {
 					type: Array,
@@ -178,163 +160,17 @@
 					type: Array,
 					notify: true,
 					value: [],
-				},
-				requestedCalendars: {
-					type: Array,
-					notify: true,
 					reflectToAttribute: true,
-					value: [],
-					observer: '_calendarsChanged'
 				},
 				holidays: {
 					type: Array,
-					notify: true,
-					value: []
+					value: [],
+					observer: 'holidayObserver',
 				}
 			},
-			ready: function() {
-				//console.log('### puff-agenda ready');
-				var self = this;
-				this.$.calAPI.addEventListener('google-api-load',function(e){return self.calAPILoaded(e);});
-				this.$.calSigninAware.addEventListener('google-signin-aware-success',function(e){return self.signIn(e);});
-				this.$.calSigninAware.addEventListener('google-signin-aware-failure',function(e){return self.signOut(e);});
-				this.$.calSigninAware.addEventListener('google-signin-aware-signed-out',function(e){return self.signOut(e);});
-
-				//jQuery(this.$.calendar).fullCalendar({});
+			holidayObserver: function(e){
+				console.log('AHOJ');
 			},
-			render: function() {
-				//console.log('### puff-agenda render');
-				//jQuery(this.$.calendar).fullCalendar('render');
-			},
-			
-			_generalObserver: function(e){
-				//console.log('### puff-agenda generalObserver');
-				console.log(e);
-			},
-			
-
-			//API a PRIHLASOVANI
-			signedIn: false,
-			_calApiReady: function() {
-				//console.log('### puff-agenda _calApiReady');
-				return this.signedIn && this.$.calAPI.api;
-			},
-			calAPILoaded: function () {
-				//console.log('### puff-agenda calAPILoaded');
-				if (this._calApiReady()) {
-					console.log('CalAPI ready');
-					this._reloadAllEvents();
-				}
-			},
-			signIn: function () {
-				//console.log('### puff-agenda signIn');
-				console.log('calendar signin aware success');
-				this.signedIn = true;
-				this.calAPILoaded();
-			},
-			signOut: function () {
-				//console.log('### puff-agenda signOut');
-				this.events=[];
-				this.signedIn = false;
-			},
-
-			//DRAG&DROP
-			allowDrop: function(ev) {
-				//console.log('### puff-agenda allowDrop');
-				ev.preventDefault();
-			},
-
-			drop: function(ev){
-				//console.log('### puff-agenda drop');
-				ev.preventDefault();
-			},
-
-			eventTap: function(e,detail) {
-				//console.log('### puff-agenda eventTap');
-				//this.$.eventForm.event = detail.puffEvent;
-				this.$.selector.select(detail.puffEvent);
-				this.$.eventDialog.open();
-			},
-			outTap: function() {
-				//console.log('### puff-agenda outTap');
-				this.$.eventForm.event = null;
-			},
-			
-			
-			
-			
-			//CALENDARS AND EVENTS
-			_calendars: {},
-			_calendarsChanged: function() {
-				//console.log('### puff-agenda calenarsChanged');
-				console.log('_calendarsChanged');
-				this._calendars={};
-				var calendarTypes={};
-				for (var i=0; i<this.requestedCalendars.length; i++){
-						this._calendars[this.requestedCalendars[i].id]={
-							id: this.requestedCalendars[i].id,
-							calendarType:	this.requestedCalendars[i].calendarType,
-							summary: this.requestedCalendars[i].summary,
-						};
-						if (this.requestedCalendars[i].calendarType !== 'Holidays'){
-							calendarTypes[this.requestedCalendars[i].calendarType]=this.requestedCalendars[i].calendarType;
-						}
-				}
-				this.calendarTypes = Object.keys(calendarTypes).map(function (key) {return calendarTypes[key];}); //udela array z calendarTypes
-				this._reloadAllEvents();
-			},
-			
-			_reloadAllEvents: function(){
-				//console.log('### puff-agenda _reloadAllEvents');
-				//return;
-				var self = this;
-				if (!this._calApiReady()){return;}
-				for (var k in this._calendars){self._reloadEventsFromCal(this._calendars[k].id);}
-			},
-			_reloadEventsFromCal: function(calendarId) {
-				//console.log('### puff-agenda _reloadEventsFromCal');
-				if (!this._calApiReady()){return;}
-				var self = this;
-				this.$.calAPI.api.events.list({
-					calendarId: calendarId,
-					singleEvents: true,
-					timeMax: this.dateTo.toJSON(),
-					timeMin: this.dateFrom.toJSON(),
-				}).then(function(response){return self._eventsReceived(calendarId,response);}, function(reason){console.log('Events load fail: '+calendarId);console.log(reason);});
-			},
-			_eventsReceived: function(calendarId, response){
-				//console.log('### puff-agenda _eventsReceived');
-				if (this._calendars[calendarId].calendarType!=='Holidays'){
-					this._clearCalendarEvents(calendarId);
-					for (var i=0; i<response.result.items.length; i++)
-					{
-						var puffEvent = PuffEvent.getPuffEvent(response.result.items[i],this._calendars[calendarId].calendarType);
-						this.push('events', puffEvent);
-					}
-				}
-				else //zpracování kalendáře svátků
-				{
-					var holidays=[];
-					for (var j=0; j<response.result.items.length; j++){
-						holidays.push(response.result.items[j].start.date);
-					}
-					this.holidays=holidays;
-				}
-			},
-			//vymaze z pameti udalosti konkretniho kalendare
-			_clearCalendarEvents: function(calendarId){
-				//console.log('### puff-agenda _clearCalendarEvents');
-				var events2remove = [];
-				for (var k=0; k<this.events.length; k++){
-					if (this.events[k].calendarId===calendarId){
-						events2remove.push(this.events[k]);
-					}
-				}
-				for (var l=0; l<events2remove.length; l++){
-					this.arrayDelete('events',events2remove[l]);
-				}
-			},
-			
 			filterForCalendarTypeAndDate: function(calendarType,date){
 				//console.log('### puff-agenda filterForCalendarTypeAndDate');
 				var self = this;
@@ -346,7 +182,7 @@
 			filterForCalendarType: function(calendarType){
 				//console.log('### puff-agenda filterForCalendarType');
 				return function(event){
-					return event.calendarType === calendarType;
+					return event.calendar.calendarType === calendarType;
 				};
 			},
 			filterForDate: function(date){
@@ -361,13 +197,13 @@
 					return true;
 				};
 			},
-			_computeWeeks: function(dateFrom,dateTo){
+			_computeWeeks: function(momentFrom,momentTo){
 				//console.log('### puff-agenda _computeWeeks');
 				var tydny = []; //nové prázdné pole týdnů
 				var tyden=tydny.push({days:[]})-1; //vytvoří nový týden, přidá ho do pole týdnů
-				var dateFromModified = moment(dateFrom).isoWeekday(1).toDate();
-				var dateToModified = moment(dateTo).isoWeekday(7).toDate();
-				var dny = this._computeDays(dateFromModified,dateToModified);
+				var momentFromModified = moment(momentFrom).isoWeekday(1).toDate();
+				var momentToModified = moment(momentTo).isoWeekday(7).toDate();
+				var dny = this._computeDays(momentFromModified,momentToModified);
 				for (var i = 0; i<dny.length; i++){
 					tydny[tyden].days.push(dny[i]);
 					//pokud mame nedeli a neni to posledni den, pridame novy tyden
@@ -381,11 +217,11 @@
 				return tydny; //vracím pole týdnů
 			},
 			
-			_computeDays: function(dateFrom,dateTo){
+			_computeDays: function(momentFrom,momentTo){
 				//console.log('### puff-agenda _computeDays');
-				if (dateTo<dateFrom){return [];}
-				var momentFrom = moment(dateFrom).startOf('day');
-				var momentTo = moment(dateTo).endOf('day');
+				if (momentTo<momentFrom){return [];}
+				var momentFrom = moment(momentFrom).startOf('day');
+				var momentTo = moment(momentTo).endOf('day');
 				var momentIterator = momentFrom.clone().add({days:-1});
 				var days=[];
 				while (momentTo>(momentIterator.add({days:1}))){
@@ -407,7 +243,7 @@
 				var typDne = 'regular';
 				var momentNow = moment();
 				for (var i = 0; i<this.holidays.length; i++){
-					if (moment(date).isSame(this.holidays[i],'day')) {typDne='holiday';}
+					if (moment(date).isSame(this.holidays[i].event.start.date,'day')) {typDne='holiday';}
 				}
 				if (moment(date).isoWeekday()>5) {typDne = 'holiday';}
 				if (momentNow.isSame(date,'day')) {typDne = 'today';}

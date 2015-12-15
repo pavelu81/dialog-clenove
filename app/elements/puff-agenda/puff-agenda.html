@@ -9,9 +9,11 @@
 <link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="puff-agenda-event.html">
-<link rel="import" href="puff-agenda-event-form.html">
 
+<link rel="import" href="puff-agenda-event.html">
+<!--
+<link rel="import" href="puff-agenda-event-form.html">
+-->
 
 <dom-module id="puff-agenda">
 	<paper-styles/>
@@ -93,7 +95,7 @@
 				<paper-toolbar><iron-icon icon="event"></iron-icon><span class="title">{{week.title}}</span></paper-toolbar>
 					<template is="dom-repeat" items="{{week.days}}" as="date">
 						<div class="puff-agenda-date">
-							<div class$="{{computeDayCSSStyle('title',date.date,holidays)}}">
+							<div class$="{{computeDayCSSStyle('title',date.date,holidays.*)}}">
 								<div class="puff-agenda-date-title">
 									<div class="puff-agenda-date-title-month">{{date.titles.monthabb}}</div>
 									<div class="puff-agenda-date-title-date">{{date.titles.date}}</div>
@@ -101,11 +103,10 @@
 								</div>
 							</div>
 							<template is="dom-repeat" items="{{calendarTypes}}" as="calendarType">
-									<div class$="{{computeDayCSSStyle('puff-agenda-calendarType content',date.date,holidays)}}" on-dragover="allowDrop" on-tap="outTap">
+									<div class$="[[computeDayCSSStyle('puff-agenda-calendarType content',date.date,holidays.*)]]" on-dragover="allowDrop" on-tap="outTap">
 										<template is="dom-repeat" 
 											items="{{events}}" as="event"
 											filter="{{filterForCalendarTypeAndDate(calendarType,date.date)}}" observe="reloadCount">
-											<div>{{event.summary}}</div>
 											<puff-agenda-event event="{{event}}" date="{{date.date}}" on-puff-event-tap="eventTap"></puff-agenda-event>
 										</template>
 									</div>
@@ -118,7 +119,7 @@
 	</template>
 
 	<script>
-	/* globals moment, PuffEvent */
+	/* globals moment */
 	(function () {
 		'use strict';
 		//console.log('### puff-agenda');
@@ -164,12 +165,7 @@
 				},
 				holidays: {
 					type: Array,
-					value: [],
-					observer: 'holidayObserver',
 				}
-			},
-			holidayObserver: function(e){
-				console.log('AHOJ');
 			},
 			filterForCalendarTypeAndDate: function(calendarType,date){
 				//console.log('### puff-agenda filterForCalendarTypeAndDate');
@@ -219,12 +215,12 @@
 			
 			_computeDays: function(momentFrom,momentTo){
 				//console.log('### puff-agenda _computeDays');
-				if (momentTo<momentFrom){return [];}
-				var momentFrom = moment(momentFrom).startOf('day');
-				var momentTo = moment(momentTo).endOf('day');
-				var momentIterator = momentFrom.clone().add({days:-1});
+				var mmtFrom = moment(momentFrom).startOf('day');
+				var mmtTo = moment(momentTo).endOf('day');
+				var momentIterator = mmtFrom.clone().add({days:-1});
+				if (mmtTo<mmtFrom){return [];}
 				var days=[];
-				while (momentTo>(momentIterator.add({days:1}))){
+				while (mmtTo>(momentIterator.add({days:1}))){
 					var newMoment=momentIterator.clone();
 					var titles = {
 						date: newMoment.date(),
@@ -239,7 +235,7 @@
 			},
 
 			computeDayCSSStyle: function(target,date){
-				//console.log('### puff-agenda computeDayCSSStyle');
+				//console.log('### puff-agenda computeDayCSSStyle %s %s %s', target, date, holidays);
 				var typDne = 'regular';
 				var momentNow = moment();
 				for (var i = 0; i<this.holidays.length; i++){

@@ -1,0 +1,137 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<script src='../../bower_components/moment/min/moment-with-locales.min.js'></script>
+<link rel="import" href="../../bower_components/google-signin/google-signin.html">
+<link rel="import" href="../../bower_components/google-apis/google-apis.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/observe-js/observe-js.html">
+
+
+
+<dom-module id="puff-agenda-event">
+	<template>
+		<style>
+		  :host {
+			display: block;
+			overflow: hidden;
+			max-width: 240px;
+			--event-color: transparent;
+		  }
+		  .event {
+		  	@apply(--layout-horizontal);
+		  	margin: 4px;
+		  	padding: 2px;
+		  	cursor: pointer;
+		  	background-color: var(--event-color);
+		  }
+		  .left {
+		  	padding: 2px;
+		  }
+		  .right {
+		  	padding: 2px;
+		  }
+		  .body {
+		  	@apply(--layout-vertical);
+		  	@apply(--layout-flex);
+		  	padding: 2px;
+			line-height: 20px;
+			min-height: 40px;
+
+		  }
+		  .title {
+		  	overflow: hidden;
+		  	white-space: nowrap;
+		  	text-overflow: ellipsis;
+		  }
+		  .description {
+		  	@apply(--paper-font-caption);
+		  	overflow: hidden;
+		  	white-space: nowrap;
+		  	text-overflow: ellipsis;
+		  }
+		</style>
+		
+		<!--obsah-->
+		<div style="" draggable="true">
+		<paper-material class="event" on-mouseover="mouseover" on-mouseout="mouseout" elevation={{elevation}}>
+			<div class="left"></div>
+			<div class="body">
+				<div class="title">{{event.summary}}</div>
+				<div class="description">{{event.description}}</div>
+			</div>
+			<div class="right"></div>
+		</paper-material>
+		</div>
+	</template>
+
+	<script>
+	(function () {
+		'use strict';
+		Polymer({
+			is: 'puff-agenda-event',
+			properties: {
+				date: {
+					type: Date,
+					notify: true,
+					reflectToAttribute: true,
+				},
+				event: {
+					type: Object,
+					notify: true,
+					reflectToAttribute: true,
+					observer: 'eventSet'
+				},
+				elevation: {
+					notify: true,
+					value: 1,
+				},
+			},
+			listeners: {
+				'tap': 'regularTap'
+			},
+			ready: function() {
+				this.customStyle['--event-color']=this.event.colorSet.Background;
+				this.updateStyles();
+			},
+			detached: function(){
+				this.detachObserver();				
+			},
+		
+			eventSet: function(){
+				this.attachObserver();
+			},
+			eventChanged: function(added, removed, changed/*, getOldValueFn - zatim nepotrebujeme*/){
+				var k;
+				for (k in this.event){
+					this.notifyPath('event.'+k,this.event[k]);
+				}
+				for (k in changed){
+					this.notifyPath('event.'+k,this.event[k]);
+				}
+			},
+			regularTap: function(e/*,detail*/){
+				e.cancelBubble=true;
+				e.stopPropagation();
+				this.fire('puff-event-tap',{puffEvent: this.event, date: this.date});
+			},
+			mouseover: function(){this.elevation=2;},
+			mouseout: function(){this.elevation=1;},
+			attachObserver: function(){
+				/*
+				this.detachObserver();
+				this.eventObserver = new ObjectObserver(this.event);
+				this.eventObserver.open(this.eventChanged,this);
+				*/
+			},
+			detachObserver: function(){
+				if (typeof this.eventObserver!=='undefined'){
+					this.eventObserver.close();
+				}
+
+			}
+
+		});
+	})();
+	</script>
+</dom-module>

@@ -1,10 +1,14 @@
-﻿	<script>
-	/* global moment */ //pro JSHint
+	<script>
+	/* global moment, PuffColorDir */ //pro JSHint
 	/* exported PuffCalendarEvent */
 	var PuffCalendarEvent = (function(){
-		function PuffCalendarEvent(calendar,googleEventResource){
+		function PuffCalendarEvent(calendar,googleEventResource,colorDir){
 			//PROPERTIES START
 			Object.defineProperties(this,{
+				//mapa barev
+				colorDir: {
+					value: typeof colorDir === 'undefined' ? new PuffColorDir(): colorDir
+				},
 				event: {
 					value: googleEventResource,
 					enumerable: false,
@@ -14,6 +18,18 @@
 					value: calendar,
 					enumerable: true,
 					writable: false
+				},
+				resource: {
+					get: function(){
+						//tohle by mělo vracet v případě omluvenek uzivatele, jinak kalendar
+						return calendar.id;
+					}	
+				},
+				//vrací barevný set události (už konkrétní fg a bg)
+				colorSet:{
+					get: function(){
+						return this.colorDir.getColorSetForResource(this.resource,'200',true);
+					}
 				},
 				id: {
 					enumerable: true,

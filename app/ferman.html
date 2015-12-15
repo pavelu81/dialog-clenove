@@ -20,11 +20,14 @@
 	<!-- endbuild -->
 
 	<!-- will be replaced with elements/elements.vulcanized.html -->
-	<link rel="import" href="elements/elements.html">
+	<link rel="import" href="elements/puff-agenda/puff-agenda.html">
+	<link rel="import" href="elements/puff-agenda/puff-calendar-controller.html">
 	<!-- endreplace-->
 
 	<!-- For shared styles, shared-styles.html import in elements.html -->
 	<style is="custom-style" include="shared-styles"></style>
+
+
 </head>
 
 <body unresolved class="fullbleed layout vertical">
@@ -53,9 +56,6 @@
 	<puff-calendar-controller id="calCtrl" moment-from="{{mFrom}}" moment-to="{{mTo}}" calendar-types="{{cTypes}}"  events="{{events}}"></puff-calendar-controller>
 	<puff-calendar-controller id="calCtrlHoliday" moment-from="[[mFrom]]" moment-to="[[mTo]]" calendars='["cs.czech#holiday@group.v.calendar.google.com"]' events="{{holidayEvents}}"></puff-calendar-controller>
 </template>
-
-<!-- build:js scripts/app.js -->
-<!-- endbuild-->
 
 <script>
 (function(document) {

@@ -2,13 +2,22 @@
 	/* global moment, PuffColorDir */ //pro JSHint
 	/* exported PuffCalendarEvent */
 	var PuffCalendarEvent = (function(){
-		function PuffCalendarEvent(calendar,googleEventResource,colorDir){
+		function PuffCalendarEvent(calendar,googleEventResource,rel){
 			//PROPERTIES START
 			Object.defineProperties(this,{
+				is: {value: 'puff-calendar-event', readonly: true},
+
 				//mapa barev
 				colorDir: {
-					value: typeof colorDir === 'undefined' ? new PuffColorDir(): colorDir
+					value: typeof rel === 'undefined' ? 
+						new PuffColorDir(): 
+						rel.is === 'puff-calendar-controler'?
+							rel.colorDir:
+								rel.is === 'puff-color-dir'?
+									rel:
+									new PuffColorDir(),
 				},
+				
 				event: {
 					value: googleEventResource,
 					enumerable: false,

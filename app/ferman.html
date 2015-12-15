@@ -50,8 +50,8 @@
 		</google-signin>
 	</div>
 	<puff-agenda id='ferman' moment-from="[[mFrom]]" moment-to="[[mTo]]" calendar-types="[[cTypes]]" events="{{events}}" holidays="[[holidayEvents]]"></puff-agenda>
-	<puff-calendar-controler id="calCtrl" moment-from="{{mFrom}}" moment-to="{{mTo}}" calendar-types="{{cTypes}}"  events="{{events}}"></puff-calendar-controler>
-	<puff-calendar-controler id="calCtrlHoliday" moment-from="[[mFrom]]" moment-to="[[mTo]]" calendars='["cs.czech#holiday@group.v.calendar.google.com"]' events="{{holidayEvents}}"></puff-calendar-controler>
+	<puff-calendar-controller id="calCtrl" moment-from="{{mFrom}}" moment-to="{{mTo}}" calendar-types="{{cTypes}}"  events="{{events}}"></puff-calendar-controller>
+	<puff-calendar-controller id="calCtrlHoliday" moment-from="[[mFrom]]" moment-to="[[mTo]]" calendars='["cs.czech#holiday@group.v.calendar.google.com"]' events="{{holidayEvents}}"></puff-calendar-controller>
 </template>
 
 <!-- build:js scripts/app.js -->

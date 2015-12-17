@@ -35,9 +35,9 @@
 					}	
 				},
 				//vrací barevný set události (už konkrétní fg a bg)
-				colorSet:{
+				defColorSet:{
 					get: function(){
-						return this.colorDir.getColorSetForResource(this.resource,'200',true);
+						return this.getColorSet('200');
 					}
 				},
 				id: {
@@ -146,14 +146,164 @@
 					}
 
 				},
+
+				//STATE PROPERTIES - vlastnosti informujici o stavu objektu
+				//vrací info, co všechno lze s událostí dělat
+				allowActions:{ 
+					enumerable: true,
+					get: function(){
+						var allowance = {
+							save: false,
+							reload: false,
+							edit: false
+						};
+
+						if (this.pending){
+							return allowance;
+						}
+
+						allowance.save = this.saveState==='new' || this.dirty;
+						allowance.reload = this.saveState !== 'new' /*&& this.dirty*/;
+						allowance.edit = true;
+
+						return allowance;
+					}
+				}, 
+
+				pending: {
+					enumerable: true,
+					get: function(){return (this.saveState === 'loading' || this.saveState === 'saving');}
+				},
+
+				debug: {
+					//enumerable: true,
+					get: function(){return JSON.stringify(this,null,2);}
+				},
+
+				changeCount: { //počet změn
+					enumerable: true,
+					value: 0,
+					writable: true,
+				},
+				reloadCount: { //počet reloadu z kalendáře
+					enumarable: true,
+					value: 0,
+					writable: true,
+				},
+				dirty: { //obsahuje neuložené změny
+					enumerable: true,
+					value: false,
+					writable: true
+				},
+				saveState: { //stav ukládání
+					enumerable: true,
+					value: 'loaded',
+					writable: true,
+				},
+				error:{
+					enumerable: true,
+					value:'',
+					writable: true
+				},
+
+
+
 			});
 			//PROPERTIES END
 
 			//FUNCTIONS START
-			//	this.metoda=function(){}
+			//vrací barevný set podle tématu a stínu
+			this.getColorSet=function(shade){
+				return this.colorDir.getColorSetForResource(this.resource,shade,true);
+			}
+			this.setDirty=function(value){
+				value=value!==false?true:false;
+				this.dirty = value;
+				this.changeCount++;
+			};
+			this.setEvent=function(eventResource){
+				this.event=eventResource;
+				this.saveState='loaded';
+				this.setDirty(false);
+				this.reloadCount++;
+			};
+			this.save=function(callback,callbackContext){
+				this.saveState='saving';
+				var doneFnFulfilled=function(){
+				  this.saveFulfilled.call(this,arguments);
+				  if (typeof callback==='function'){
+						  callback.call(callbackContext,arguments);
+				  }
+				};
+				var doneFnRejected=function(){
+				  this.saveRejected.call(this,arguments);
+				  if (typeof callback==='function'){
+						  callback.call(callbackContext,arguments);
+				  }
+				};
+
+				try{
+					window.gapi.client.calendar.events.update({
+						calendarId: this.event.organizer.email,
+						eventId: this.event.id,
+						resource: this.event
+					}).then(doneFnFulfilled,doneFnRejected,this);
+				}
+				catch(e){
+					console.error('Saving call exception: %s PuffEvent: %o', e, this);
+				}
+			};
+			this.saveRejected=function(reason){
+				console.error('Save of PuffEvent %o rejected because of %o',this,reason[0]);
+				this.error=reason[0].result.error.message;
+				this.saveState='loaded';
+			};
+			this.saveFulfilled=function(response){
+				console.info('Save of PuffEvent %o fullfilled with response %o', this, response);
+				this.error='';
+				this.setEvent(response[0].result);
+			};
+			this.load=function(callback,callbackContext){
+				this.saveState='loading';
+				var doneFnFulfilled=function(){
+				  this.loadFulfilled.call(this,arguments);
+				  if (typeof callback==='function'){
+						  callback.call(callbackContext,arguments);
+				  }
+				};
+				var doneFnRejected=function(){
+				  this.loadRejected.call(this,arguments);
+				  if (typeof callback==='function'){
+						  callback.call(callbackContext,arguments);
+				  }
+				};
+				try{
+					window.gapi.client.calendar.events.get({
+						calendarId: this.event.organizer.email,
+						eventId: this.event.id
+					}).then(doneFnFulfilled,doneFnRejected,this);
+				}
+				catch(e){
+					console.error('Loading call exception: %s PuffEvent: %o', e, this);
+				}
+
+			};
+			this.loadRejected=function(reason){
+				console.error('Save of PuffEvent %o rejected because of %o',this,reason[0]);
+				this.error=reason[0].result.error.message;
+				this.saveState='loaded';
+			};
+			this.loadFulfilled=function(response){
+				console.info('Load of PuffEvent %o fullfilled with response %o', this, response[0]);
+				this.error='';
+				this.setEvent(response[0].result);
+			};
 			//FUNCTIONS END
 			
+
+
 			//OBSERVER PATTERN START
+			/*
 			this.handlers = [];
 			this.subscribe = function(fn, thisObj){
 				var scope = thisObj || window;
@@ -176,6 +326,7 @@
 					item.fn.call(item.scope, parametr);
 				});
 			};
+			*/
 			//OBSERVER PATTERN END
 		}
 

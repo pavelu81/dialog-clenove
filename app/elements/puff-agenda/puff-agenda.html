@@ -11,9 +11,7 @@
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 
 <link rel="import" href="puff-agenda-event.html">
-<!--
 <link rel="import" href="puff-agenda-event-form.html">
--->
 
 <dom-module id="puff-agenda">
 	<paper-styles/>
@@ -90,9 +88,9 @@
 
 		<div class="puff-agenda">
 		<array-selector id="selector" items="{{events}}" selected="{{selectedEvent}}"></array-selector>
-		<paper-dialog id="eventDialog" modal="true">
+		<!--<paper-dialog id="eventDialog" modal="true">-->
 			<puff-agenda-event-form id="eventForm" event="{{selectedEvent}}"></puff-agenda-event-form>
-		</paper-dialog>
+		<!--</paper-dialog>-->
 		<template is="dom-repeat" items="{{weeks}}" as="week">
 			<paper-material class="puff-agenda-week">
 				<paper-toolbar><iron-icon icon="event"></iron-icon><span class="title">{{week.title}}</span></paper-toolbar>
@@ -247,6 +245,11 @@
 				if (moment(date).isoWeekday()>5) {typDne = 'holiday';}
 				if (momentNow.isSame(date,'day')) {typDne = 'today';}
 				return target+'-'+typDne;
+			},
+
+			eventTap: function(e,detail) {
+				this.$.selector.select(detail.puffEvent);
+				//this.$.eventDialog.open();
 			},
 		});
 	})();

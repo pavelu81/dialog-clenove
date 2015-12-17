@@ -53,8 +53,9 @@
                     </div>
                 </div>
                 <div>
-                    <paper-button class="colorful" disabled="[[!event.allowActions.save]]" on-tap="callSave"><iron-icon icon="check"></iron-icon>Ulož</paper-button>
+                    <paper-button on-tap="callSave" disabled="[[!event.allowActions.save]]" class="colorful"><iron-icon icon="check"></iron-icon>Ulož</paper-button>
                     <paper-button on-tap="callReload" disabled="[[!event.allowActions.reload]]"><iron-icon icon="refresh"></iron-icon>Obnov</paper-button>
+                    <paper-button on-tap="closeForm"><iron-icon icon="close"></iron-icon>Zavři</paper-button>
                 </div>
                 <div hidden="{{!event.error}}" style="color: red; padding-bottom: 10px; padding-top: 10px; ">
                         <div style="font-weight: bold">Chyba:</div>
@@ -214,6 +215,10 @@
                 },
                 reloaded: function () {
                     this.notifyEventProps(true);
+                },
+                closeForm: function(){
+                    this.set('event',null);
+                    this.fire('puff-agenda-event-form-closed');
                 },
 
 

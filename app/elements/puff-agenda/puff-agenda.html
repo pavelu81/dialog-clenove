@@ -89,7 +89,7 @@
 		<div class="puff-agenda">
 		<array-selector id="selector" items="{{events}}" selected="{{selectedEvent}}"></array-selector>
 		<paper-dialog id="eventDialog" modal="true">
-			<puff-agenda-event-form id="eventForm" event="{{selectedEvent}}" on-puff-agenda-event-form-closed="eventFormClosed"></puff-agenda-event-form>
+			<puff-agenda-event-form id="eventForm" in-dialog event="{{selectedEvent}}" on-puff-agenda-event-form-closed="eventFormClosed"></puff-agenda-event-form>
 		</paper-dialog>
 		<template is="dom-repeat" items="{{weeks}}" as="week">
 			<paper-material class="puff-agenda-week">

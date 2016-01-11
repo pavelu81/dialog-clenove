@@ -13,7 +13,7 @@
 
 <dom-module id="puff-agenda-event-form">
     <template>
-        <template is="dom-if" if="{{hasEvent}}">
+        <template is="dom-if" if="{{visible}}">
             <style>
                 :host {
                     display: block;
@@ -41,7 +41,7 @@
             <div style="padding: 0 24px;">
                 <div class="layout horizontal">
                     <div class="flex">
-                        <paper-input label="Název" value="{{event.summary}}" disabled="[[!event.allowActions.edit]]"></paper-input>
+                        <paper-input label="Název" value="{{event.summary}}" disabled="[[!event.allowActions.edit]]" always-float-label></paper-input>
                         <div class="layout horizontal wrap">
                             <paper-checkbox checked="{{event.wholeday}}" style="margin-top: 32px; margin-right: 32px" class="" disabled="[[!event.allowActions.edit]]">Celodenní</paper-checkbox>
                             <div class="layout horizontal wrap">
@@ -99,6 +99,14 @@
                         type: String,
                         notify: false,
                         observer: 'timeToChanged',
+                    },
+                    visible: {
+                        type: true,
+                        computed: 'computeIsVisible(hasEvent,inDialog)'
+                    },
+                    inDialog: {
+                        type: Boolean,
+                        value: false,
                     },
                     hasEvent: {
                         type: Boolean,
@@ -162,7 +170,9 @@
                 computeDateErrorMsg: function (wholeday) {
                     return wholeday ? 'Např. 2016-01-31' : 'Např. 2016-02-28T18:00';
                 },
-
+                computeIsVisible: function(hasEvent,inDialog){
+                    return hasEvent || inDialog;
+                },
                 timeFromChanged: function (newVal, oldVal) {
                     this.timeChanged('from', newVal, oldVal);
                 },
